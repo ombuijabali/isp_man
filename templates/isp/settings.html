@@ -1,0 +1,275 @@
+{% extends 'isp/base.html' %}
+{% load static %}
+
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+  <!-- Your custom styles for the settings page -->
+  <style>
+    /* Add any additional custom styles here */
+
+    /* Improved styling for the settings container */
+    .settings-container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #f8f9fa; /* Light gray background for the settings container */
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); /* Box shadow for better visibility */
+    }
+
+    /* Improved styling for list items */
+    .list-group-item {
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      transition: background-color 0.3s;
+    }
+
+    .list-group-item:hover {
+      background-color: #e9ecef; /* Light gray background on hover */
+    }
+
+    /* Additional styles for profile information section */
+    #profileInfo {
+      background-color: #f9f9f9; /* Light background color */
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    #profileInfo h3 {
+      color: teal; /* Dark text color for headings */
+    }
+
+    #profileForm {
+      margin-top: 20px;
+    }
+
+    #profileForm label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: #555; /* Darker text color for labels */
+    }
+
+    #profileForm input {
+      width: calc(100% - 16px);
+      padding: 8px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #profileForm .file-upload {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      margin-bottom: 15px;
+    }
+
+    #profileForm input[type="file"] {
+      font-size: 100px;
+      position: absolute;
+      left: 0;
+      top: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    #profileForm .file-label {
+      display: inline-block;
+      padding: 8px 16px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #profileForm .file-label:hover {
+      background-color: #45a049;
+    }
+
+    #profileForm img {
+      max-width: 100px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    #profileForm button {
+      background-color: #4CAF50; /* Green background color for buttons */
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    #profileForm button:hover {
+      background-color: #45a049; /* Darker green on hover */
+    }
+
+    .status-message {
+      color: #4CAF50; /* Green color for success messages */
+      margin-top: 10px;
+    }
+
+
+    /* Dark Theme styles */
+    .dark-theme {
+      background-color: #343a40; /* Dark background color */
+      color: #fff; /* Light text color */
+    }
+
+    .settings-container.dark-theme {
+      background-color: #424242; /* Dark background color for the settings container */
+    }
+
+    .list-group-item.dark-theme {
+      background-color: #555; /* Dark background color for list items */
+      color: #fff; /* Light text color for list items */
+    }
+
+    #profileForm.dark-theme label {
+      color: #fff; /* Light text color for form labels */
+    }
+
+    #profileForm.dark-theme input {
+      border-color: #fff; /* Darker border color for form inputs */
+    }
+
+    #profileForm.dark-theme button {
+      background-color: #212529; /* Dark background color for form button */
+    }
+  </style>
+
+  <div class="container">
+    <div class="settings-container">
+
+      <ul class="list-group">
+        <li class="list-group-item" onclick="showHelp()">Help</li>
+        <li class="list-group-item" onclick="showProfileInfo()">Profile Information</li>
+        <li class="list-group-item" onclick="showAccountInfo()">Account Information</li>
+        <li class="list-group-item" onclick="toggleTheme()">Theme: <span id="themeStatus">Dark</span></li>
+        <!-- Add more list items as needed -->
+      </ul><hr style="color: teal; font-weight: bold;" >
+
+      <!-- Help Section -->
+      <div id="helpContent" class="profile-info-container">
+        <h3 style="color: teal">Contact Developer</h3>
+        <p>Email: simion7ombui@gmail.com</p>
+        <p>Phone: +254 706 881 849</p>
+      </div>
+
+      <!-- Profile Information Section -->
+      <div id="profileInfo" class="profile-info-container">
+        <h3>Update Profile Information</h3>
+        <form id="profileForm" method="post" enctype="multipart/form-data" action="{% url 'update_profile' %}">
+          {% csrf_token %}
+          <!-- Existing form fields -->
+          <label for="first_name">First Name:</label>
+          <input type="text" id="first_name" name="first_name" required>
+
+          <label for="last_name">Last Name:</label>
+          <input type="text" id="last_name" name="last_name" required>
+
+          <label for="email">Email:</label>
+          <input type="email" id="email" name="email" required>
+
+          <label for="phone_number">Phone Number:</label>
+          <input type="tel" id="phone_number" name="phone_number" required>
+
+          <!-- Improved file input for profile picture -->
+          <div class="file-upload">
+            <label for="profilePic" class="file-label">Choose Photo</label>
+            <input type="file" id="profilePic" name="profilePic" accept="image/*">
+          </div>
+          <img id="profilePicPreview" src="#" alt="Profile Picture">
+
+          <!-- Add a status message for profile update -->
+          {% if updated %}
+          <p class="status-message">Profile successfully updated!</p>
+          {% endif %}
+
+          <!-- Styled button for saving profile -->
+          <button type="submit" class="btn btn-primary">Save Profile</button>
+        </form>
+      </div>
+
+      <!-- Account Information Section -->
+      <div id="accountInfo" class="profile-info-container">
+        <h3 style="color: teal">Account Information</h3>
+        <!-- Display dynamic details from the updated profile -->
+        <p>Account Type: Premium</p>
+        <p>First Name: {{ user_profile.first_name }}</p>
+        <p>Last Name: {{ user_profile.last_name }}</p>
+        <p>Email: {{ user_profile.email }}</p>
+        <p>Phone Number: {{ user_profile.phone_number }}</p>
+        <!-- Add more account information as needed -->
+      </div>
+
+      <!-- Your JavaScript for handling settings interactions -->
+     <script>
+          function showHelp() {
+              hideAllSections();
+              document.getElementById('helpContent').style.display = 'block';
+          }
+
+          function showProfileInfo() {
+              hideAllSections();
+              document.getElementById('profileInfo').style.display = 'block';
+          }
+
+          function showAccountInfo() {
+              hideAllSections();
+              document.getElementById('accountInfo').style.display = 'block';
+          }
+
+          function toggleTheme() {
+              var body = document.body;
+              var themeStatus = document.getElementById('themeStatus');
+
+              if (body.classList.contains('dark-theme')) {
+                  body.classList.remove('dark-theme');
+                  themeStatus.textContent = 'Light';
+              } else {
+                  body.classList.add('dark-theme');
+                  themeStatus.textContent = 'Dark';
+              }
+          }
+
+          function saveProfile() {
+              // Placeholder for saving profile information
+              var firstName = document.getElementById('first_name').value;
+              var lastName = document.getElementById('last_name').value;
+              var email = document.getElementById('email').value;
+              var phoneNumber = document.getElementById('phone_number').value;
+              var profilePic = document.getElementById('profilePic').value;
+              var profilePicPreview = document.getElementById('profilePicPreview');
+
+              // Add logic to save the profile information to the server or perform other actions
+
+              // Display the profile picture preview
+              if (profilePic) {
+                  profilePicPreview.style.display = 'block';
+                  profilePicPreview.src = URL.createObjectURL(event.target.files[0]);
+              }
+          }
+
+          function hideAllSections() {
+              document.getElementById('helpContent').style.display = 'none';
+              document.getElementById('profileInfo').style.display = 'none';
+              document.getElementById('accountInfo').style.display = 'none';
+          }
+
+          // Call showHelp() to display Help Content by default
+          showHelp();
+      </script>
+
+    </div>
+  </div>
+{% endblock %}

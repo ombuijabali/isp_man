@@ -1,0 +1,74 @@
+<!-- faqs.html -->
+{% extends 'isp/base.html' %}
+
+{% block title %}FAQs{% endblock %}
+
+{% block content %}
+  <style>
+    .faq-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .faq-item {
+      margin-bottom: 15px;
+      cursor: pointer;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      padding: 10px;
+      transition: background-color 0.3s;
+    }
+
+    .faq-item:hover {
+      background-color: #f5f5f5;
+    }
+
+    .question {
+      font-weight: bold;
+      text-decoration: none;
+      display: block;
+      font-size: 18px;
+      color: #333;
+    }
+
+    .answer {
+      display: none;
+      margin-top: 10px;
+      color: #555;
+    }
+
+    /* Toggle icon for better user experience */
+    .toggle-icon {
+      float: right;
+      font-size: 20px;
+      color: #888;
+      transition: transform 0.3s;
+    }
+
+    .faq-item.open .toggle-icon {
+      transform: rotate(180deg);
+    }
+  </style>
+
+  <h2 style="color: teal; text-align: center;">Frequently Asked Questions</h2>
+  <ul class="faq-list">
+    {% for faq in faqs %}
+      <li class="faq-item">
+        <span class="question">{{ faq.question }}</span>
+        <i class="fas fa-chevron-down toggle-icon"></i>
+        <div class="answer">{{ faq.answer }}</div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('.faq-item').click(function() {
+        // Toggle visibility of the answer within the clicked FAQ item
+        $(this).find('.answer').toggle();
+        $(this).toggleClass('open');
+      });
+    });
+  </script>
+{% endblock %}

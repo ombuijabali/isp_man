@@ -1,0 +1,28 @@
+/* common-styles.css */
+
+/* Common styles for all HTML pages */
+body {
+  transition: background-color 0.5s; /* Smooth transition for theme change */
+}
+
+.sidebar {
+  /* Styles for your sidebar */
+}
+
+/* Dark Theme styles */
+.dark-theme {
+  background-color: #343a40; /* Dark background color */
+  color: #fff; /* Light text color */
+}
+
+.dark-theme body {
+  background-color: #212529; /* Dark background color for body */
+  color: #fff; /* Light text color for body */
+}
+
+.dark-theme .sidebar {
+  background-color: #343a40; /* Dark background color for sidebar */
+  color: #fff; /* Light text color for sidebar */
+}
+
+/* Add more common and dark theme styles as needed */

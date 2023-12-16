@@ -1,0 +1,11 @@
+<!-- notification_detail.html -->
+<p><strong>Content:</strong> {{ notification.content }}</p>
+<p><strong>Timestamp:</strong> {{ notification.timestamp }}</p>
+<p><strong>Changes:</strong></p>
+<pre>{{ notification.changes }}</pre>
+<ul>
+    {% for change in changes_list %}
+        <li>{{ change }}</li>
+    {% endfor %}
+</ul>
+<!-- Add other details you want to display -->

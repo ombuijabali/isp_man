@@ -1,0 +1,726 @@
+{% extends 'isp/base.html' %}
+
+{% block title %}Network{% endblock %}
+
+{% load static %}
+{% load leaflet_tags %}
+
+{% block content %}
+<head>
+    {% leaflet_js plugins="ALL" %}
+    {% leaflet_css plugins="ALL" %}
+    <title>Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+    <style type="text/css">
+        #gis-container {
+          position: relative;
+          height: 300px;
+          margin-top: 20px;
+        }
+
+        #gis { width: 100%; height: 100vh; }
+
+        .search-input-wrapper {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            padding: 5px;
+            
+        }
+
+        #search-input {
+            padding: 5px; /* Adjusted padding */
+        }
+
+        #search-button {
+            padding: 5px; /* Adjusted padding */
+            background-color: teal;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-tabs {
+          border-bottom: none;
+          margin-bottom: 10px;
+        }
+
+        .nav-tabs .nav-link {
+          padding: 10px 15px;
+          border-radius: 5px;
+          background-color: #eee;
+          border: 1px solid #ddd;
+          text-decoration: none;
+          color: #333;
+          font-size: 14px;
+          margin-left: 5px;
+        }
+
+        .nav-tabs .nav-link.active {
+          background-color: #fff;
+          border-color: #007bff;
+          color: #007bff;
+        }
+
+        .tab-content {
+          background-color: #f5f5f5;
+          padding: 10px;
+        }
+
+        .tab-pane .popup-title {
+          font-weight: bold;
+          margin-bottom: 10px;
+        }
+
+        .tab-pane .popup-content {
+          margin-bottom: 5px;
+        }
+
+       .popup-container {
+            background-color: #ffffff;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            padding: 10px;
+            width: 300px;
+            text-align: left;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .popup-content {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .popup-button {
+            display: block;
+            background-color: #3498db;
+            color: #ffffff;
+            text-align: center;
+            padding: 5px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .popup-button:hover {
+                background-color: #2980b9;
+            }
+
+       .building-popup {
+            max-width: 300px;
+            padding: 15px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .building-popup h3 {
+            color: #3498db;
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .building-popup p {
+            color: #333;
+            margin: 8px 0;
+        }
+
+        .building-popup b {
+            color: #555;
+        }
+        
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+    <script src="https://cdn.osmbuildings.org/classic/0.2.2b/OSMBuildings-Leaflet.js"></script>
+<body> 
+    <div id="gis-container">
+      <div id="gis"></div>
+      <div class="search-input-wrapper">
+        <input type="text" id="search-input" placeholder="Search a Feature">
+        <button id="search-button"><i class="fa fa-search"></i></button>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+        function loadBasemap(map, options) {
+            // Add Google Satellite layer
+            var googleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+                attribution: 'Google Satellite',
+                maxZoom: 25,
+            });
+
+            // Add OpenStreetMap layer
+            var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 25,
+            });
+            
+
+            //OSM Building Data
+            new L.TileLayer('https://{s}.tiles.mapbox.com/v3/[pk.eyJ1Ijoic2ltaW9uMTIzIiwiYSI6ImNsZzZkaGJtcjBjZG8zcnFpcG1icHZ0MWEifQ.qs9HmzJglua2mUBOnoahQQ]/{z}/{x}/{y}.png', {
+              attribution: '© Map tiles <a href="https://mapbox.com">Mapbox</a>',
+              maxZoom: 18,
+              maxNativeZoom: 20
+            }).addTo(map);
+
+            var osmbLayer = new OSMBuildings(map).load('https://{s}.data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
+
+            // Set Google Satellite as the default basemap
+            googleSatellite.addTo(map);
+            map.zoomControl.remove();
+
+            // Create a layer control and add it to the map
+            var baseMaps = {
+                'Google Satellite': googleSatellite,
+                'OSM_3D_Buildings': osmbLayer,
+                'OpenStreetMap': osmLayer               
+            };
+
+            L.control.coordinates({
+                position:"bottomright", //optional default "bootomright"
+                decimals:6, //optional default 4
+                decimalSeperator:".", //optional default "."
+                labelTemplateLat:"Latitude: {y}", //optional default "Lat: {y}"
+                labelTemplateLng:"Longitude: {x}", //optional default "Lng: {x}"
+                enableUserInput:true, //optional default true
+                useDMS: true,//optional default false
+                useLatLngOrder: true, //ordering of labels, default false-> lng-lat
+                markerType: L.marker, //optional default L.marker
+                markerProps: {}, //optional default {},
+            }).addTo(map);
+
+              // create a fullscreen button and add it to the map
+            L.control.fullscreen({
+                position: 'topright',
+                title: 'FullScreen',
+                titleCancel: 'Exit FullScreen mode',
+                content: null,
+                forceSeparateButton: true,
+                fullscreenElement: false
+            }).addTo(map);
+
+
+            var zoomHome = L.Control.zoomHome();
+                zoomHome.addTo(map);
+
+            L.control.browserPrint({position: 'bottomleft', title: 'Print Map'}).addTo(map);
+
+            map.pm.addControls({
+                position: 'bottomright',
+                drawCircle: false,
+                edit: false,  // Hide "Finish" and "Cancel" tags
+            });
+
+            L.control.ruler({
+                position: 'bottomleft'
+            }).addTo(map);
+
+            L.control.measure({
+                position: 'bottomleft',
+                primaryLengthUnit: 'meters', // You can change the primary unit as needed
+                secondaryLengthUnit: 'kilometers', // You can change the secondary unit as needed
+                primaryAreaUnit: 'sqmeters', // You can change the primary area unit as needed
+                secondaryAreaUnit: undefined, // Leave undefined to disable secondary area unit
+            }).addTo(map);
+
+
+            L.Control.geocoder().addTo(map);
+
+            var searchLayer = L.layerGroup().addTo(map);
+            
+            function highlightLayer(layer) {
+                layer.setStyle({
+                    fillColor: 'yellow',
+                    fillOpacity: 0.7,
+                    weight: 2,
+                    color: 'yellow',
+                });
+            }
+
+            function resetLayerHighlight(layer) {
+                // Reset the layer's style to the default
+                layer.setStyle({
+                    fillColor: '',  // Set to the default fill color
+                    fillOpacity: 0.2,  // Set to the default fill opacity
+                    weight: 1,  // Set to the default weight
+                    color: 'black',
+                });
+            }
+
+            function searchLayerByName(name) {
+                // Clear previous search results
+                searchLayer.clearLayers();
+
+                // Iterate through each layer and check if the name matches
+                map.eachLayer(function (layer) {
+                    if (layer.feature && layer.feature.properties) {
+                        const layerName = layer.feature.properties.route_name || layer.feature.properties.main_name || layer.feature.properties.spliter_na || layer.feature.properties.closore_na || layer.feature.properties.fat_name || layer.feature.properties.main_route || layer.feature.properties.client_nam;
+
+                        if (layerName && layerName.toLowerCase().includes(name.toLowerCase())) {
+                            // Add the matching layer to the searchLayer
+                            searchLayer.addLayer(layer);
+
+                            // Highlight the matching layer
+                            highlightLayer(layer);
+
+                            // Create a dynamic popup content based on the feature properties
+                            const popupContent = createDynamicPopupContent(layer.feature.properties);
+
+                            layer.bindPopup(popupContent).openPopup();
+                        }
+                    }
+                });
+            }
+
+            function createDynamicPopupContent(properties) {
+                // Create a dynamic popup content based on feature properties
+                const popupContent = document.createElement('div');
+                popupContent.className = 'popup-container';
+
+                // Iterate through feature properties and add them to the popup
+                for (const key in properties) {
+                    const value = properties[key];
+                    const propertyElement = document.createElement('p');
+                    propertyElement.className = 'popup-content';
+                    propertyElement.innerHTML = `<strong>${key}:</strong> ${value}`;
+                    popupContent.appendChild(propertyElement);
+                }
+
+                return popupContent;
+            }
+
+            // Add an event listener for the search button
+            document.getElementById('search-button').addEventListener('click', function () {
+                const searchInput = document.getElementById('search-input').value;
+                if (searchInput) {
+                    searchLayerByName(searchInput);
+                }
+            });
+
+            // Add an event listener for the Enter key in the search input
+            document.getElementById('search-input').addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    const searchInput = this.value;
+                    if (searchInput) {
+                        searchLayerByName(searchInput);
+                    }
+                }
+            });
+
+            // Add an event listener to reset layer styles when the map is clicked
+            map.on('click', function (event) {
+                searchLayer.clearLayers();
+            });
+
+            var overlays = {};
+
+            // Add GeoJSON datasets to the overlays
+            var datasets = new L.GeoJSON.AJAX("{% url 'routes' %}", {
+              style: function (feature) {
+                return {
+                  color: 'blue', // blue color
+                  fillOpacity: 0.7, // Adjust opacity if needed
+                  weight: 2, // Border weight
+                };
+              },
+              onEachFeature: function (feature, layer) {
+                // Create a custom HTML content for the popup
+                var popupContent = `
+                  <div class="popup-container">
+                    <ul class="nav nav-tabs" id="myTabs">
+                      <li class="nav-item">
+                        <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Route Infomation</a>
+                      </li>                    
+                    </ul>
+
+                    <div class="tab-content">
+                      <div class="tab-pane fade show active" id="route-content">
+                       
+                        <p class="popup-content"><strong>Name:</strong> ${feature.properties.route_name}</p>
+                        <p class="popup-content"><strong>Service Available:</strong> ${feature.properties.service_av}</p>
+                        <p class="popup-content"><strong>Operator:</strong> ${feature.properties.olt}</p>
+                        <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
+                        <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                      
+                        <p class="popup-content"><strong>Infrastacture:</strong> ${feature.properties.infrasturc}</p>
+                        <p class="popup-content"><strong>Capacity:</strong> ${feature.properties.bandwidth}</p>
+                        <p class="popup-content"><strong>Fibre Length:</strong> ${feature.properties.length} meters</p>
+                        <p class="popup-content"><strong>Comment:</strong> ${feature.properties.comment}</p>
+                      </div>
+
+                    </div>
+                  </div>
+                `; 
+
+                layer.on('click', function (e) {
+                  // Open the popup
+                  var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+
+                  // Initialize the tab switcher
+                  $('a[data-toggle="tab"]').on('click', function (e) {
+                    e.preventDefault();
+                    $(this).tab('show');
+                  });
+                });
+              }
+            });
+
+            var mains = new L.GeoJSON.AJAX("{% url 'mains' %}", {
+               style: function (feature) {
+                  // Define a color mapping for different route names
+                  var color;
+                  switch (feature.properties.main_name) {
+                      case "GSL-MPA-KAYOLE-GSLMPA UTAWALA":
+                          color = 'pink';
+                          break;
+                      case "EADC-GSLMPA-UTAWALA":
+                          color = 'red';
+                          break;
+                      case "EADC-MPA-KAYOLE":
+                          color = 'yellow';
+                          break;
+
+                      default:
+                          color = 'blue'; // Default color for unknown routes
+                  }
+
+                  return {
+                      color: color,
+                      weight: 2,
+                      opacity: 1,
+                      dashArray: '5, 5'
+                  };
+              },
+              onEachFeature: function (feature, layer) {
+                // Create a custom HTML content for the popup
+                var popupContent = `
+                    <div class="popup-container">
+                      <ul class="nav nav-tabs" id="myTabs">
+                        <li class="nav-item">
+                          <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Route Details</a>
+                        </li>                      
+                      </ul>
+
+                      <div class="tab-content">
+                        <div class="tab-pane fade show active" id="route-content">
+                         
+                          <p class="popup-content"><strong>Name:</strong> ${feature.properties.main_name}</p>
+                          <p class="popup-content"><strong>Type:</strong> ${feature.properties.types}</p>
+                          <p class="popup-content"><strong>Length:</strong> ${feature.properties.length} meters</p>
+                          <p class="popup-content"><strong>comment:</strong> ${feature.properties.comment}</p>
+                        </div>
+                       
+                      </div>
+                    </div>
+                  `;
+
+                  layer.on('click', function (e) {
+                    // Open the popup
+                    var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+
+                    // Initialize the tab switcher
+                    $('a[data-toggle="tab"]').on('click', function (e) {
+                      e.preventDefault();
+                      $(this).tab('show');
+                    });
+                  });
+                }
+              });
+
+              var redMarkerIcon = L.divIcon({              
+                  html: '<i class="fas fa-box fa-lg" style="color: #d41629;"></i>'
+              });
+
+              var points = new L.GeoJSON.AJAX("{% url 'fats' %}", {
+                  pointToLayer: function (feature, latlng) {
+                      // Use the custom red marker icon for points
+                      return L.marker(latlng, { icon: redMarkerIcon });
+                  },
+                  onEachFeature: function (feature, layer) {
+                      // Create a custom HTML content for the popup
+                      var popupContent = `
+                          <div class="popup-container">
+                              ${feature.properties.photo_url
+                                  ? `<img src="${feature.properties.photo_url}" alt="Fat Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                  : '<p class="popup-content">No photo available</p>'}
+
+                              <ul class="nav nav-tabs" id="myTabs">
+                                  <li class="nav-item">
+                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Fat Information</a>
+                                  </li>
+                              </ul>
+
+                              <div class="tab-content">
+                                  <div class="tab-pane fade show active" id="route-content">
+                                      <p class="popup-content"><strong>Fat Name:</strong> ${feature.properties.fat_name}</p>
+                                      <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
+                                      <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
+                                      <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
+                                      <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      `;
+
+                      layer.on('click', function (e) {
+                          // Open the popup
+                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+
+                          // Initialize the tab switcher (if you decide to keep it)
+                          $('a[data-toggle="tab"]').on('click', function (e) {
+                              e.preventDefault();
+                              $(this).tab('show');
+                          });
+                      });
+                  }
+              });
+
+              var orangeMarkerIcon = L.divIcon({              
+                  html: '<i class="fas fa-box fa-lg" style="color: orange;"></i>'
+              });
+
+              var spliter = new L.GeoJSON.AJAX("{% url 'spliters' %}", {
+                  pointToLayer: function (feature, latlng) {
+                      // Use the custom orange marker icon for points
+                      return L.marker(latlng, { icon: orangeMarkerIcon });
+                  },
+                  onEachFeature: function (feature, layer) {
+                      // Create a custom HTML content for the popup
+                      var popupContent = `
+                          <div class="popup-container">
+                              ${feature.properties.photo_url
+                                  ? `<img src="${feature.properties.photo_url}" alt="Splitter Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                  : '<p class="popup-content">No photo available</p>'}
+
+                              <ul class="nav nav-tabs" id="myTabs">
+                                  <li class="nav-item">
+                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Splitter Information</a>
+                                  </li>
+                              </ul>
+
+                              <div class="tab-content">
+                                  <div class="tab-pane fade show active" id="route-content">
+                                      <p class="popup-content"><strong>Splitter Name:</strong> ${feature.properties.spliter_na}</p>
+                                      <p class="popup-content"><strong>Splitter Type:</strong> ${feature.properties.spliter_ty}</p>
+                                      <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
+                                      <p class="popup-content"><strong>No of Ports:</strong> ${feature.properties.no_of_port}</p>
+                                      <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
+                                      <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
+                                      <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      `;
+
+                      layer.on('click', function (e) {
+                          // Open the popup
+                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+
+                          // Initialize the tab switcher (if you decide to keep it)
+                          $('a[data-toggle="tab"]').on('click', function (e) {
+                              e.preventDefault();
+                              $(this).tab('show');
+                          });
+                      });
+                  }
+              });              
+
+              var purpleMarkerIcon = L.divIcon({              
+                  html: '<i class="fas fa-box fa-lg" style="color: purple;"></i>'
+              });
+
+              var closure = new L.GeoJSON.AJAX("{% url 'closure' %}", {
+                  pointToLayer: function (feature, latlng) {
+                      // Use the custom purple marker icon for points
+                      return L.marker(latlng, { icon: purpleMarkerIcon });
+                  },
+                  onEachFeature: function (feature, layer) {
+                      // Create a custom HTML content for the popup
+                      var popupContent = `
+                          <div class="popup-container">
+                              ${feature.properties.photo_url
+                                  ? `<img src="${feature.properties.photo_url}" alt="Closure Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                  : '<p class="popup-content">No photo available</p>'}
+
+                              <ul class="nav nav-tabs" id="myTabs">
+                                  <li class="nav-item">
+                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Closure Information</a>
+                                  </li>
+                              </ul>
+
+                              <div class="tab-content">
+                                  <div class="tab-pane fade show active" id="route-content">
+                                      <p class="popup-content"><strong>Splitter Name:</strong> ${feature.properties.closore_na}</p>
+                                      <p class="popup-content"><strong>Splitter Type:</strong> ${feature.properties.spliter_ty}</p>
+                                      <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                          
+                                      <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
+                                      <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
+                                      <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      `;
+
+                      layer.on('click', function (e) {
+                          // Open the popup
+                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+
+                          // Initialize the tab switcher (if you decide to keep it)
+                          $('a[data-toggle="tab"]').on('click', function (e) {
+                              e.preventDefault();
+                              $(this).tab('show');
+                          });
+                      });
+                  }
+              });
+
+              var buildingIcon = L.icon({
+                  iconUrl: '{% static "img/buildings.png" %}',  // Provide the path to your custom icon
+                  iconSize: [32, 32],  // Set the size of the icon
+                  iconAnchor: [16, 16],  // Set the anchor point of the icon
+                  popupAnchor: [0, -16]  // Set the popup anchor relative to the icon
+              });
+
+             var buildings = L.geoJSON.ajax("{% url 'buildings' %}", {
+                  pointToLayer: function (feature, latlng) {
+                      return L.marker(latlng, { icon: buildingIcon });
+                  },
+                  onEachFeature: function (feature, layer) {
+                      var popupContent = `
+                          <div class="popup-container">
+                              <ul class="nav nav-tabs" id="myTabs">
+                                  <li class="nav-item">
+                                      <p class="popup-content">${feature.properties.address}</p>
+                                  </li>
+                              </ul>
+                              <div class="tab-content">
+                                  <div class="tab-pane fade show active" id="route-content">
+                                      <p class="popup-content"><strong>Client(s):</strong> ${feature.properties.client_nam}</p>
+                                      <p class="popup-content"><strong>Type:</strong> ${feature.properties.building_t}</p>
+                                      <p class="popup-content"><strong>Service Splitter:</strong> ${feature.properties.odb_split}</p>
+                                  </div>
+                              </div>
+                          </div>
+                      `;
+
+                      layer.bindPopup(popupContent);
+                  }
+              });
+
+
+              var zones = new L.GeoJSON.AJAX("{% url 'zones' %}", {
+                  style: function (feature) {
+                      return {
+                          fillColor: 'transparent', // Brown color
+                          fillOpacity: 0.9, // Adjust opacity if needed
+                          weight: 1.5, // Border weight
+                          color: 'black' // Border color
+                      };
+                  },
+                  onEachFeature: function (feature, layer) {            
+                      var popupContent = `
+                        <div class="popup-container">
+                          <ul class="nav nav-tabs" id="myTabs">
+                          <li class="nav-item">
+                              <p class="popup-content">${feature.properties.spliter_na.toUpperCase()} Zone</p>
+                          </li>
+                          </ul>
+                          <div class="tab-content">
+                            <div class="tab-pane fade show active" id="route-content">                        
+                              <p class="popup-content"><strong>Type:</strong> ${feature.properties.spliter_ty}</p>
+                              <p class="popup-content"><strong>Number of Ports:</strong> ${feature.properties.no_of_port}</p>
+                              <p class="popup-content"><strong>Status:</strong> ${feature.properties.condition}</p>
+                            </div>                                                                    
+                          </div>
+                        </div>
+                      `;
+
+                      layer.bindPopup(popupContent);
+                  }
+              });
+              
+
+              var centers = new L.GeoJSON.AJAX("{% url 'centers' %}", {
+                  style: function (feature) {
+                      // Style for polygons, e.g., blue fill color
+                      return { fillColor: 'blue', color: 'oceanblue', fillOpacity: 0.7 };
+                  },
+                  onEachFeature: function (feature, layer) {
+                      // Bind a popup to each feature
+                      if (feature.properties) {
+                          var popupContent = `
+                              <div class="popup-container">
+                                  ${feature.properties.photo_url
+                                      ? `<img src="${feature.properties.photo_url}" alt="Center Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                      : '<p class="popup-content">No photo available</p>'}
+
+                                  <ul class="nav nav-tabs" id="myTabs">
+                                      <li class="nav-item">
+                                          <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Centers Details</a>
+                                      </li>                      
+                                  </ul>
+
+                                  <div class="tab-content">
+                                      <div class="tab-pane fade show active" id="route-content">
+                                          <p class="popup-content"><strong> Center Name:</strong> ${feature.properties.main_route}</p>
+                                          <p class="popup-content"><strong>Center Code:</strong> ${feature.properties.code}</p>
+                                          <p class="popup-content"><strong>Description:</strong> ${feature.properties.descriptio} meters</p>
+                                          <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
+                                      </div>
+                                  </div>
+                              </div>
+                          `;
+                          layer.bindPopup(popupContent);
+                      }
+                  }
+              });
+
+              
+
+              // Add GeoJSON layers to the map
+              datasets.addTo(map);
+              points.addTo(map);
+              buildings.addTo(map);
+              mains.addTo(map);
+              centers.addTo(map);
+              spliter.addTo(map);
+              closure.addTo(map);
+              zones.addTo(map);
+
+              // Add GeoJSON layers to the overlays object
+              overlays['Routes'] = datasets;                    
+              overlays['Main Routes'] = mains;
+              overlays['Data Centers'] = centers;
+              overlays['Splitters'] = spliter;
+              overlays['Closure Kits'] = closure;
+              overlays['FATs'] = points;
+              overlays['Buildings'] = buildings;
+              overlays['Zones'] = zones;
+
+              // Add layer control with baseMaps and overlays
+              L.control.layers(baseMaps, overlays).addTo(map);
+          }
+
+          function our_layer(map, options) {
+              loadBasemap(map, options);
+              var searchLayer = L.layerGroup().addTo(map);
+          }
+
+          // Call the function to load the basemap
+          window.loadBasemap = loadBasemap;
+          window.our_layer = our_layer;
+          window.searchLayer = searchLayer;
+
+    </script>
+
+    {% leaflet_map "gis" callback="window.our_layer" %}
+
+</body>
+</head>
+{% endblock %}
