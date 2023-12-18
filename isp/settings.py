@@ -157,7 +157,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'Lib', 'site-packages', 'osgeo', 'gdal304.dll')
+GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'gdal', 'gdal304.dll')
 
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (-1.282385, 36.968488),
