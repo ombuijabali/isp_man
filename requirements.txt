@@ -11,7 +11,7 @@ django-model-utils==4.3.1
 django-notifications-hq==1.8.3
 GDAL==3.4.3
 Fiona==1.8.19
-geos==3.10.2
+geos==0.2.1
 GDAL== 3.4.3
 gunicorn==21.2.0
 jsonfield==3.1.0
