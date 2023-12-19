@@ -105,7 +105,11 @@ DATABASES = {
         "NAME": "isp",
         "USER": "postgres",
         "PASSWORD": "Tauren",
+<<<<<<< HEAD
         "HOST": "localhost",
+=======
+        "HOST": "127.0.0.1",
+>>>>>>> c219da888751f058d059f141933c5fcf2a4a80cd
         "PORT": "5432",
     }
 }
@@ -190,5 +194,8 @@ cloudinary.config(
     api_key='125995954515637',
     api_secret='7UBo6Yy6EWDpklpCL1JiAZLxZXM'
 )
+<<<<<<< HEAD
 
 django_heroku.settings(locals())
+=======
+>>>>>>> c219da888751f058d059f141933c5fcf2a4a80cd
