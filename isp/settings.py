@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
+import django_heroku
+import dj_database_url
 
 from django.core.management.utils import get_random_secret_key
 
@@ -97,19 +99,16 @@ WSGI_APPLICATION = "isp.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME":  "isp",
-        "USER": 'postgres',
-        "PASSWORD": 'Tauren',
-        "HOST": '127.0.0.1',
-        "PORT": '5432'
+        "NAME": "isp",
+        "USER": "postgres",
+        "PASSWORD": "Tauren",
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -157,7 +156,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
-GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'Lib', 'site-packages', 'osgeo', 'gdal304.dll')
+GDAL_LIBRARY_PATH = os.path.join(BASE_DIR, 'gdal', 'gdal304.dll')
 
 LEAFLET_CONFIG = {
     'DEFAULT_CENTER': (-1.282385, 36.968488),
@@ -191,3 +190,5 @@ cloudinary.config(
     api_key='125995954515637',
     api_secret='7UBo6Yy6EWDpklpCL1JiAZLxZXM'
 )
+
+django_heroku.settings(locals())
