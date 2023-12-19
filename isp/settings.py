@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
 
 from django.core.management.utils import get_random_secret_key
 
@@ -102,10 +101,10 @@ WSGI_APPLICATION = "isp.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "gwijinet_database",
-        "USER": "gwijinet_database_user",
-        "PASSWORD": "zxWjaUdFIHMmpDXbbZtfCEvMlJPgPrSE",
-        "HOST": "dpg-cm095ita73kc73c2dc60-a.oregon-postgres.render.com",
+        "NAME": "isp",
+        "USER": "postgres",
+        "PASSWORD": "Tauren",
+        "HOST": "127.0.0.1",
         "PORT": "5432",
     }
 }
