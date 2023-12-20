@@ -102,14 +102,10 @@ WSGI_APPLICATION = "isp.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "isp",
-        "USER": "postgres",
-        "PASSWORD": "Tauren",
-<<<<<<< HEAD
-        "HOST": "localhost",
-=======
-        "HOST": "127.0.0.1",
->>>>>>> c219da888751f058d059f141933c5fcf2a4a80cd
+        "NAME": "d4q2a8k44hnn79",
+        "USER": "sjeazbvwvwfhxg",
+        "PASSWORD": "7dfab32f30ff952772d2b0910996979995ceb63d858d013739cf9b5ebb3f1a5e",
+        "HOST": "ec2-44-206-204-65.compute-1.amazonaws.com",
         "PORT": "5432",
     }
 }
@@ -194,8 +190,5 @@ cloudinary.config(
     api_key='125995954515637',
     api_secret='7UBo6Yy6EWDpklpCL1JiAZLxZXM'
 )
-<<<<<<< HEAD
 
 django_heroku.settings(locals())
-=======
->>>>>>> c219da888751f058d059f141933c5fcf2a4a80cd
