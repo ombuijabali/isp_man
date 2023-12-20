@@ -1,5 +1,2 @@
-<<<<<<< HEAD
 python-3.12.1
-=======
-Python 3.11.7
->>>>>>> e62d6e3e5c53cebeb93ed2c9e01c79f8a913cff0
+
