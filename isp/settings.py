@@ -151,7 +151,6 @@ if not DISABLE_COLLECTSTATIC:
     # Use WhiteNoise to serve static files directly from the app
     MIDDLEWARE += ['whitenoise.middleware.WhiteNoiseMiddleware']
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
