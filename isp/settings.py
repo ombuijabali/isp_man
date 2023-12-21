@@ -20,8 +20,6 @@ import cloudinary.uploader
 import cloudinary.api
 
 import dj_database_url
-db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(db_from_env)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -96,9 +94,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "isp.wsgi.application"
 
-
-DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
-
+db_from_env = dj_database_url.config(conn_max_age=500)
+DATABASES = {
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": "d2a5r2mnsc4j4d",
+        "USER": "pwbdoxbbalkaah",
+        "PASSWORD": "98347fdc292886d684bb7bb917d4f1fec53eb084135bc4684143e4df542952fc",
+        "HOST": "ec2-35-170-27-172.compute-1.amazonaws.com",
+        "PORT": "5432",
+    }
+}
+DATABASES['default'].update(db_from_env)
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
