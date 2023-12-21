@@ -94,7 +94,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "isp.wsgi.application"
 
-DATABASES['default']['ENGINE'] = 'django.contrib.gis.db.backends.postgis'
+DATABASES = {
+    "default": {
+        "ENGINE": "django.contrib.gis.db.backends.postgis",
+        "NAME": "d4q2a8k44hnn79",
+        "USER": "sjeazbvwvwfhxg",
+        "PASSWORD": "7dfab32f30ff952772d2b0910996979995ceb63d858d013739cf9b5ebb3f1a5e",
+        "HOST": "ec2-44-206-204-65.compute-1.amazonaws.com",
+        "PORT": "5432",
+    }
+}
 
 db_from_env = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(db_from_env)
