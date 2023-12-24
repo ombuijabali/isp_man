@@ -64,7 +64,7 @@ def home(request):
         # Perform a case-insensitive search for building names
         buildings = Clients.objects.filter(
             Q(address__icontains=query) |
-            Q(name__icontains=query) |
+            Q(client_nam__icontains=query) |
             Q(olt__icontains=query) |
             Q(odb_split__icontains=query)
         )
