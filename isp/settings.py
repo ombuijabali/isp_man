@@ -12,12 +12,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 
 from pathlib import Path
 import os
-import django_heroku
+#import django_heroku
 from django.core.management.utils import get_random_secret_key
 
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
+#import cloudinary
+#import cloudinary.uploader
+#import cloudinary.api
 
 import dj_database_url
 
@@ -32,9 +32,9 @@ SECRET_KEY = get_random_secret_key()
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = False ########################################################################################################################3
 
-ALLOWED_HOSTS = ['ispmanager', 'www.ispmanager']
+ALLOWED_HOSTS = ['128.199.36.210', 'localhost', '127.0.0.1', '0.0.0.0', 'ispmanager', 'www.ispmanager']
 
 #hsts settings
 SECURE_HSTS_SECONDS = 31536000  # 1 year
@@ -42,9 +42,13 @@ SECURE_HSTS_PRELOAD = True
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 
 #https settings
-SECURE_SSL_REDIRECT = True
-SESSION_COOKIE_SECURE = True
-CSRF_COOKIE_SECURE = True
+SECURE_SSL_REDIRECT = False
+#Edited this to False so that to temporarilly stop https redirect until we buy an SSL certificate
+
+SESSION_COOKIE_SECURE = False
+
+#Edited this and the above to false coz it only allows forms from https sources
+CSRF_COOKIE_SECURE = False
 
 # Application definition
 INSTALLED_APPS = [
@@ -97,16 +101,16 @@ WSGI_APPLICATION = "isp.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
-        "NAME": "d4q2a8k44hnn79",
-        "USER": "sjeazbvwvwfhxg",
-        "PASSWORD": "7dfab32f30ff952772d2b0910996979995ceb63d858d013739cf9b5ebb3f1a5e",
-        "HOST": "ec2-44-206-204-65.compute-1.amazonaws.com",
+        "NAME": "ispman_db",
+        "USER": "postgres",
+        "PASSWORD": "@ISPman2023",
+        "HOST": "localhost",
         "PORT": "5432",
     }
 }
 
-db_from_env = dj_database_url.config(conn_max_age=500)
-DATABASES['default'].update(db_from_env)
+#db_from_env = dj_database_url.config(conn_max_age=500)
+#DATABASES['default'].update(db_from_env)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -139,9 +143,9 @@ USE_I18N = True
 USE_TZ = True
 
 # Check if running on Heroku
-if 'DYNO' in os.environ:
-    # Run collectstatic during Heroku deployment
-    os.system("python manage.py collectstatic --noinput")
+#if 'DYNO' in os.environ:
+#    # Run collectstatic during Heroku deployment
+#    os.system("python manage.py collectstatic --noinput")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -150,11 +154,13 @@ STATIC_URL = '/static/'
 
 DISABLE_COLLECTSTATIC = os.environ.get('DISABLE_COLLECTSTATIC', '0') == '1'
 
-if not DISABLE_COLLECTSTATIC:
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+#if not DISABLE_COLLECTSTATIC:
     # Use WhiteNoise to serve static files directly from the app
-    MIDDLEWARE += ['whitenoise.middleware.WhiteNoiseMiddleware']
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+#    MIDDLEWARE += ['whitenoise.middleware.WhiteNoiseMiddleware']
+#    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+#    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 
 # Default primary key field type
@@ -194,10 +200,10 @@ LOGOUT_REDIRECT_URL = 'login'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-cloudinary.config(
-    cloud_name='dgkommeq9',
-    api_key='125995954515637',
-    api_secret='7UBo6Yy6EWDpklpCL1JiAZLxZXM'
-)
+#cloudinary.config(
+   # cloud_name='dgkommeq9',
+  #  api_key='125995954515637',
+ #   api_secret='7UBo6Yy6EWDpklpCL1JiAZLxZXM'
+#)
 
-django_heroku.settings(locals())
+#django_heroku.settings(locals())
