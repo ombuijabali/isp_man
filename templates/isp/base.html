@@ -29,20 +29,20 @@
             overflow-y: auto;
             transition: margin-left 0.5s; /* Add transition for smooth animation */
         }
-        
+
         #sidebar.collapsed {
             margin-left: -20%; /* Hide the sidebar when collapsed */
         }
-        
+
         #sidebar .navbar-brand {
             font-size: 1.5rem;
             font-weight: bold;
         }
-        
+
         #sidebar ul.nav {
             margin-top: 20px;
         }
-        
+
         #sidebar .nav-link {
             border: none;
             border-radius: 0;
@@ -53,43 +53,16 @@
         #main {
             margin-left: 20%; /* Width of the sidebar */
             padding: 10px;
-            transition: margin-left 0.5s, width 0.5s; /* Add transition for smooth animation */
-            width: 80%; /* Take up 80% of the width by default */
+            transition: margin-left 0.5s;
+            max-width: 100%; /* Take the full width */
+            box-sizing: border-box; /* Include padding and border in the element's total width */
         }
-        
-        @media (max-width: 768px) {
-            #main {
-                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
-                width: 100%; /* Take up full width on smaller screens */
-            }
-        }
-        
-        @media (min-width: 900px) {
-            #main {
-                margin-left: 0; /* Adjust main content when sidebar is collapsed for larger screens */
-                width: 100%; /* Take up full width on larger screens */
-            }
-        }
-        
-        @media (min-width: 992px) {
-            #main {
-                margin-left: 0; /* Adjust main content when sidebar is collapsed for even larger screens */
-                width: 100%; /* Take up full width on even larger screens */
-            }
-        }
-        
-        @media (min-width: 1200px) {
-            #main {
-                margin-left: 0; /* Adjust main content when sidebar is collapsed for the largest screens */
-                width: 100%; /* Take up full width on the largest screens */
-            }
-        }
-        
+
         #main.collapsed {
             margin-left: 0; /* Adjust main content when sidebar is collapsed */
             max-width: 100%;
+           
         }
-
 
         .btn-teal {
             background: linear-gradient(45deg, teal, #000);
@@ -167,17 +140,18 @@
                             {% endif %}
                         </a>
                     </li>
-
-
                     <li class="nav-item">
                         <a class="nav-link btn btn-teal" href="{% url 'settings' %}">
                             <i class="fas fa-cog" style="margin-right: 5px; color: orange;"></i> Settings
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link btn btn-teal" href="{% url 'logout' %}">
-                            <i class="fas fa-sign-out-alt" style="margin-right: 5px; color: orange;"></i> Logout
-                        </a>
+                        <form id="logoutForm" action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-link btn btn-teal" style="width: 100%;">
+                                <i class="fas fa-sign-out-alt" style="margin-right: 5px; color: orange;"></i> Logout
+                            </button>
+                        </form>
                     </li>
                 </ul>
             </div><br><br><br><br><br>
