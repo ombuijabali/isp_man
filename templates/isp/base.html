@@ -13,18 +13,6 @@
 
   
     <style>
-        @media (min-width: 900px) {
-    /* Add styles for tablets and larger screens */
-        }
-
-        @media (min-width: 992px) {
-            /* Add styles for medium-sized desktops and larger screens */
-        }
-
-        @media (min-width: 1200px) {
-            /* Add styles for large desktops and larger screens */
-        }
-
         body {
             display: flex;
             font-family: 'Open Sans', sans-serif;
@@ -66,10 +54,40 @@
             margin-left: 20%; /* Width of the sidebar */
             padding: 10px;
             transition: margin-left 0.5s; /* Add transition for smooth animation */
+            width: 80%;
           
              /* Hide horizontal scrollbar */
         }
 
+        @media (max-width: 768px) {
+            #main {
+                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 900px) {
+            #main {
+                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
+                width: 100%;
+            }
+        /* Add styles for tablets and larger screens */
+        }
+
+        @media (min-width: 992px) {
+            #main {
+                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
+                width: 100%;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            #main {
+                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
+                width: 100%;
+            }
+        }
+        
         #main.collapsed {
             margin-left: 0; /* Adjust main content when sidebar is collapsed */
             max-width: 100%;
