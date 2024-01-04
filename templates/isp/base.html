@@ -29,20 +29,20 @@
             overflow-y: auto;
             transition: margin-left 0.5s; /* Add transition for smooth animation */
         }
-
+        
         #sidebar.collapsed {
             margin-left: -20%; /* Hide the sidebar when collapsed */
         }
-
+        
         #sidebar .navbar-brand {
             font-size: 1.5rem;
             font-weight: bold;
         }
-
+        
         #sidebar ul.nav {
             margin-top: 20px;
         }
-
+        
         #sidebar .nav-link {
             border: none;
             border-radius: 0;
@@ -53,46 +53,43 @@
         #main {
             margin-left: 20%; /* Width of the sidebar */
             padding: 10px;
-            transition: margin-left 0.5s; /* Add transition for smooth animation */
-            width: 80%;
-          
-             /* Hide horizontal scrollbar */
+            transition: margin-left 0.5s, width 0.5s; /* Add transition for smooth animation */
+            width: 80%; /* Take up 80% of the width by default */
         }
-
+        
         @media (max-width: 768px) {
             #main {
                 margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
-                width: 100%;
+                width: 100%; /* Take up full width on smaller screens */
             }
         }
-
+        
         @media (min-width: 900px) {
             #main {
-                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
-                width: 100%;
+                margin-left: 0; /* Adjust main content when sidebar is collapsed for larger screens */
+                width: 100%; /* Take up full width on larger screens */
             }
-        /* Add styles for tablets and larger screens */
         }
-
+        
         @media (min-width: 992px) {
             #main {
-                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
-                width: 100%;
+                margin-left: 0; /* Adjust main content when sidebar is collapsed for even larger screens */
+                width: 100%; /* Take up full width on even larger screens */
             }
         }
-
+        
         @media (min-width: 1200px) {
             #main {
-                margin-left: 0; /* Adjust main content when sidebar is collapsed for smaller screens */
-                width: 100%;
+                margin-left: 0; /* Adjust main content when sidebar is collapsed for the largest screens */
+                width: 100%; /* Take up full width on the largest screens */
             }
         }
         
         #main.collapsed {
             margin-left: 0; /* Adjust main content when sidebar is collapsed */
             max-width: 100%;
-           
         }
+
 
         .btn-teal {
             background: linear-gradient(45deg, teal, #000);
