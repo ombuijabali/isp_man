@@ -13,10 +13,23 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     changes = models.TextField() 
 
-    def __str__(self):
-        return f"{self.content} - {self.timestamp}"
+    def save(self, *args, **kwargs):
+        # Check if the instance is being created or updated
+        is_new = self._state.adding
 
+        # Save the instance
+        super().save(*args, **kwargs)
 
+        # Create a new notification
+        notification_content = f"Changes made to {self.__class__.__name__} with id {self.id}"
+        notification_changes = "Include any specific details about the changes here."
+
+        Notification.objects.create(
+            content=notification_content,
+            timestamp=timezone.now(),
+            changes=notification_changes
+        )
+        
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=100)
@@ -83,6 +96,8 @@ class Splitters(models.Model):
     spliter_na = models.CharField(max_length=254, default='', blank=True)
     spliter_ty = models.CharField(max_length=254, default='', blank=True)
     no_of_port = models.CharField(max_length=254, default='', blank=True)
+    used_ports = models.IntegerField(default=0, blank=True)
+    unused_por = models.IntegerField(default=0, blank=True)
     installati = models.CharField(max_length=254, default='', blank=True)
     condition = models.CharField(max_length=254, default='', blank=True)
     latitude = models.FloatField(default='', blank=True)
@@ -124,6 +139,7 @@ class Routes(models.Model):
     olt = models.CharField(max_length=100, default='', blank=True)
     comment = models.CharField(max_length=100, default='', blank=True)
     infrasturc = models.CharField(max_length=100, default='', blank=True)
+    types = models.CharField(max_length=100, default='', blank=True)
     geom = models.MultiLineStringField(srid=4326)
 
     def __str__(self):
