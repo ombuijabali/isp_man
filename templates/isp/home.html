@@ -148,7 +148,7 @@
             <p class="mapped-label"><i class="fas fa-box" style="color: purple;"></i> Total Mapped Closure Kits</p>
         </div>   
         <div class="mapped-item">
-            <p class="mapped-count">{{ total_mapped_closures }}</p>
+            <p class="mapped-count">{{ total_mapped_splitters }}</p>
             <p class="mapped-label"><i class="fas fa-box" style="color: orange;"></i> Total Mapped Spliters</p>
         </div>
     </div>
@@ -198,62 +198,6 @@
         </script>
     </div>
 
-        <div class="chart-item">
-        <canvas id="lineChart" width="400" height="400"></canvas>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var lineChartCanvas = document.getElementById('lineChart').getContext('2d');
-                var mainsData = JSON.parse('{{ mains_data|escapejs }}');
-
-                var labels = mainsData.map(function (item) {
-                    return item.main_name;
-                });
-                var data = mainsData.map(function (item) {
-                    return item.length;
-                });
-
-                var myLineChart = new Chart(lineChartCanvas, {
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Length',
-                            data: data,
-                            fill: false,
-                            borderColor: 'oceanblue',
-                            borderWidth: 2,
-                            pointBackgroundColor: 'blue',
-                            pointRadius: 5,
-                        }]
-                    },
-                    options: {
-                        plugins: {
-                            title: {
-                                display: true,
-                                color: 'teal',
-                                text: 'Mains Lines in Length',
-                            }
-                        },
-                        scales: {
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Mains',
-                                }
-                            },
-                            y: {
-                                title: {
-                                    display: true,
-                                    text: 'Length',
-                                }
-                            }
-                        }
-                    }
-                });
-            });
-        </script>
-    </div>
-
     <div class="chart-item">
         <canvas id="portChart" width="400" height="400"></canvas>
         <script>
@@ -290,65 +234,6 @@
                     }
                 });
             });
-        </script>
-    </div>
-
-    <div class="chart-item">
-        <canvas id="buildingChart" width="400" height="400"></canvas>
-        <script>
-            document.addEventListener("DOMContentLoaded", function () {
-                var buildingChartCanvas = document.getElementById('buildingChart').getContext('2d');
-                var buildingTypes = JSON.parse('{{ building_types|escapejs }}');
-
-
-                var buildingLabels = buildingTypes.map(function (item) {
-                    return item.building_t;
-                });
-
-                var buildingData = buildingTypes.map(function (item) {
-                    return item.count;
-                });
-              
-
-                var myPieChart = new Chart(buildingChartCanvas, {
-                    type: 'bar',
-                    data: {
-                        labels: buildingLabels,
-                        datasets: [{
-                            data: buildingData,
-                            backgroundColor: getRandomColors(buildingData.length),
-                            borderWidth: 1, // Add border width
-                            borderColor: '#000', // Add border color
-                        }]
-                    },
-                    options: {
-                        plugins: {
-                            title: {
-                                display: true,
-                                color: 'teal',
-                                text: 'Connected Buildings Distribution', // Add chart title
-                            }
-                        }
-                    }
-                });
-            });
-
-            function getRandomColors(numColors) {
-                var colors = [];
-                for (var i = 0; i < numColors; i++) {
-                    colors.push(getRandomColor());
-                }
-                return colors;
-            }
-
-            function getRandomColor() {
-                var letters = '0123456789ABCDEF';
-                var color = '#';
-                for (var i = 0; i < 6; i++) {
-                    color += letters[Math.floor(Math.random() * 16)];
-                }
-                return color;
-            }
         </script>
     </div>
 
@@ -390,7 +275,129 @@
             });
         </script>
     </div>
+
+    <div class="chart-item">
+        <canvas id="buildingChart" width="400" height="400"></canvas>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var buildingChartCanvas = document.getElementById('buildingChart').getContext('2d');
+                var buildingTypes = JSON.parse('{{ building_types|escapejs }}');
+
+                var buildingLabels = [];
+                var buildingData = [];
+
+                for (var i = 0; i < buildingTypes.length; i++) {
+                    var item = buildingTypes[i];
+
+                    // Check if building_t and count are not undefined or null
+                    if (item.building_t !== undefined && item.building_t !== null &&
+                        item.count !== undefined && item.count !== null) {
+                        buildingLabels.push(item.building_t);
+                        buildingData.push(item.count);
+                    }
+                }
+
+                var myBarChart = new Chart(buildingChartCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: buildingLabels,
+                        datasets: [{
+                            data: buildingData,
+                            backgroundColor: getRandomColors(buildingData.length),
+                            borderWidth: 1,
+                            borderColor: '#000',
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            title: {
+                                display: true,
+                                color: 'teal',
+                                text: 'Connected Buildings Distribution',
+                            }
+                        }
+                    }
+                });
+
+                function getRandomColors(numColors) {
+                    var colors = [];
+                    for (var i = 0; i < numColors; i++) {
+                        colors.push(getRandomColor());
+                    }
+                    return colors;
+                }
+
+                function getRandomColor() {
+                    var letters = '0123456789ABCDEF';
+                    var color = '#';
+                    for (var i = 0; i < 6; i++) {
+                        color += letters[Math.floor(Math.random() * 16)];
+                    }
+                    return color;
+                }
+            });
+        </script>
+    </div>
+
+    <div class="chart-item">
+        <canvas id="lineChart" width="400" height="400"></canvas>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                var lineChartCanvas = document.getElementById('lineChart').getContext('2d');
+                var mainsData = JSON.parse('{{ mains_data|escapejs }}');
+
+                var labels = mainsData.map(function (item) {
+                    return item.main_name;
+                });
+                var data = mainsData.map(function (item) {
+                    return item.length;
+                });
+
+                var myLineChart = new Chart(lineChartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Length',
+                            data: data,
+                            fill: false,
+                            borderColor: 'oceanblue',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'blue',
+                            pointRadius: 5,
+                        }]
+                    },
+                    options: {
+                        plugins: {
+                            title: {
+                                display: true,
+                                color: 'teal',
+                                text: 'Mains Lines in Length',
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Mains',
+                                },
+                                // Set display to false to hide labels on the x-axis
+                                display: false,
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Length',
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    </div>
 </div>
+
 <script>
     function searchBuilding() {
         var buildingName = document.getElementById('buildingSearch').value;
@@ -437,5 +444,3 @@
 </script>
 {% endif %}
 {% endblock %}
-
-
