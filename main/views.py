@@ -21,7 +21,7 @@ def home(request):
     total_mapped_mains = Mains.objects.exclude(geom__isnull=True).count()
     total_mapped_centers = Center.objects.exclude(geom__isnull=True).count()
     total_mapped_closures = Closures.objects.exclude(geom__isnull=True).count()
-    total_mapped_splitters = Closures.objects.exclude(geom__isnull=True).count()
+    total_mapped_splitters = Splitters.objects.exclude(geom__isnull=True).count()
 
     #Charts
     mains_data = Mains.objects.exclude(geom__isnull=True).values('main_name', 'length')
@@ -50,6 +50,7 @@ def home(request):
         'total_mapped_mains': total_mapped_mains,
         'total_mapped_centers': total_mapped_centers,
         'total_mapped_closures': total_mapped_closures,
+        'total_mapped_splitters': total_mapped_splitters,
         'splitter_types': splitter_types_json,  
         'splitter_ports': splitter_ports_json, 
         'building_types': building_types_json,
