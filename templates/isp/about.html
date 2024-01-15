@@ -164,13 +164,13 @@
             
 
             //OSM Building Data
-            new L.TileLayer('https://{s}.tiles.mapbox.com/v3/[pk.eyJ1Ijoic2ltaW9uMTIzIiwiYSI6ImNsZzZkaGJtcjBjZG8zcnFpcG1icHZ0MWEifQ.qs9HmzJglua2mUBOnoahQQ]/{z}/{x}/{y}.png', {
+            /*new L.TileLayer('https://{s}.tiles.mapbox.com/v3/[pk.eyJ1Ijoic2ltaW9uMTIzIiwiYSI6ImNsZzZkaGJtcjBjZG8zcnFpcG1icHZ0MWEifQ.qs9HmzJglua2mUBOnoahQQ]/{z}/{x}/{y}.png', {
               attribution: '© Map tiles <a href="https://mapbox.com">Mapbox</a>',
               maxZoom: 18,
               maxNativeZoom: 20
             }).addTo(map);
 
-            var osmbLayer = new OSMBuildings(map).load('https://{s}.data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');
+            var osmbLayer = new OSMBuildings(map).load('https://{s}.data.osmbuildings.org/0.2/anonymous/tile/{z}/{x}/{y}.json');*/
 
             // Set Google Satellite as the default basemap
             googleSatellite.addTo(map);
@@ -179,7 +179,7 @@
             // Create a layer control and add it to the map
             var baseMaps = {
                 'Google Satellite': googleSatellite,
-                'OSM_3D_Buildings': osmbLayer,
+                //'OSM_3D_Buildings': osmbLayer,
                 'OpenStreetMap': osmLayer               
             };
 
@@ -261,7 +261,7 @@
                 // Iterate through each layer and check if the name matches
                 map.eachLayer(function (layer) {
                     if (layer.feature && layer.feature.properties) {
-                        const layerName = layer.feature.properties.route_name || layer.feature.properties.main_name || layer.feature.properties.spliter_na || layer.feature.properties.closore_na || layer.feature.properties.fat_name || layer.feature.properties.main_route || layer.feature.properties.client_nam;
+                        const layerName = layer.feature.properties.route_name || layer.feature.properties.main_name || layer.feature.properties.spliter_na || layer.feature.properties.closore_na || layer.feature.properties.fat_name || layer.feature.properties.main_route || layer.feature.properties.address;
 
                         if (layerName && layerName.toLowerCase().includes(name.toLowerCase())) {
                             // Add the matching layer to the searchLayer
@@ -319,119 +319,114 @@
                 searchLayer.clearLayers();
             });
 
+
             var overlays = {};
 
             // Add GeoJSON datasets to the overlays
             var datasets = new L.GeoJSON.AJAX("{% url 'routes' %}", {
-              style: function (feature) {
-                return {
-                  color: 'blue', // blue color
-                  fillOpacity: 0.7, // Adjust opacity if needed
-                  weight: 2, // Border weight
-                };
-              },
-              onEachFeature: function (feature, layer) {
-                // Create a custom HTML content for the popup
-                var popupContent = `
-                  <div class="popup-container">
-                    <ul class="nav nav-tabs" id="myTabs">
-                      <li class="nav-item">
-                        <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Route Infomation</a>
-                      </li>                    
-                    </ul>
+                style: function (feature) {
+                    var color;
+                    switch (feature.properties.types) {
+                        case 'zone':
+                            color = 'blue';
+                            break;
+                        case 'odb':
+                            color = 'yellow';
+                            break;
+                        default:
+                            color = 'blue'; // Default to blue if the type is not 'zone' or 'odb'
+                    }
 
-                    <div class="tab-content">
-                      <div class="tab-pane fade show active" id="route-content">
-                       
-                        <p class="popup-content"><strong>Name:</strong> ${feature.properties.route_name}</p>
-                        <p class="popup-content"><strong>Service Available:</strong> ${feature.properties.service_av}</p>
-                        <p class="popup-content"><strong>Operator:</strong> ${feature.properties.olt}</p>
-                        <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
-                        <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                      
-                        <p class="popup-content"><strong>Infrastacture:</strong> ${feature.properties.infrasturc}</p>
-                        <p class="popup-content"><strong>Capacity:</strong> ${feature.properties.bandwidth}</p>
-                        <p class="popup-content"><strong>Fibre Length:</strong> ${feature.properties.length} meters</p>
-                        <p class="popup-content"><strong>Comment:</strong> ${feature.properties.comment}</p>
-                      </div>
+                    return {
+                        color: color,
+                        fillOpacity: 0.7,
+                        weight: 3,
+                    };
+                },
+                onEachFeature: function (feature, layer) {
+                    // Create a custom HTML content for the popup
+                    var popupContent = `
+                        <div class="popup-container">
+                            <ul class="nav nav-tabs" id="myTabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Route Information</a>
+                                </li>                    
+                            </ul>
 
-                    </div>
-                  </div>
-                `; 
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="route-content">
+                                    <p class="popup-content"><strong>Name:</strong> ${feature.properties.route_name}</p>
+                                    <p class="popup-content"><strong>Service Available:</strong> ${feature.properties.service_av}</p>
+                                    <p class="popup-content"><strong>Operator:</strong> ${feature.properties.olt}</p>
+                                    <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
+                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                      
+                                    <p class="popup-content"><strong>Infrastacture:</strong> ${feature.properties.infrasturc}</p>
+                                    <p class="popup-content"><strong>Capacity:</strong> ${feature.properties.bandwidth}</p>
+                                    <p class="popup-content"><strong>Fibre Length:</strong> ${feature.properties.length} meters</p>
+                                    <p class="popup-content"><strong>Route Type:</strong> ${feature.properties.types}</p>
+                                    <p class="popup-content"><strong>Comment:</strong> ${feature.properties.comment}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
-                layer.on('click', function (e) {
-                  // Open the popup
-                  var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+                    layer.on('click', function (e) {
+                        // Open the popup
+                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
 
-                  // Initialize the tab switcher
-                  $('a[data-toggle="tab"]').on('click', function (e) {
-                    e.preventDefault();
-                    $(this).tab('show');
-                  });
-                });
-              }
+                        // Initialize the tab switcher
+                        $('a[data-toggle="tab"]').on('click', function (e) {
+                            e.preventDefault();
+                            $(this).tab('show');
+                        });
+                    });
+                }
             });
 
+
             var mains = new L.GeoJSON.AJAX("{% url 'mains' %}", {
-               style: function (feature) {
-                  // Define a color mapping for different route names
-                  var color;
-                  switch (feature.properties.main_name) {
-                      case "GSL-MPA-KAYOLE-GSLMPA UTAWALA":
-                          color = 'pink';
-                          break;
-                      case "EADC-GSLMPA-UTAWALA":
-                          color = 'red';
-                          break;
-                      case "EADC-MPA-KAYOLE":
-                          color = 'yellow';
-                          break;
+                  style: function (feature) {
+                      return {
+                          color: 'red',
+                          weight: 3,
+                          opacity: 1,
+                          dashArray: '5, 5'
+                      };
+                  },
+                  onEachFeature: function (feature, layer) {
+                      // Create a custom HTML content for the popup
+                      var popupContent = `
+                          <div class="popup-container">
+                              <ul class="nav nav-tabs" id="myTabs">
+                                  <li class="nav-item">
+                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Route Details</a>
+                                  </li>                      
+                              </ul>
 
-                      default:
-                          color = 'orange'; // Default color for unknown routes
+                              <div class="tab-content">
+                                  <div class="tab-pane fade show active" id="route-content">                         
+                                      <p class="popup-content"><strong>Name:</strong> ${feature.properties.main_name}</p>
+                                      <p class="popup-content"><strong>Type:</strong> ${feature.properties.types}</p>
+                                      <p class="popup-content"><strong>Length:</strong> ${feature.properties.length} meters</p>
+                                      <p class="popup-content"><strong>comment:</strong> ${feature.properties.comment}</p>
+                                  </div>                       
+                              </div>
+                          </div>
+                      `;
+
+                      layer.on('click', function (e) {
+                          // Open the popup
+                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+
+                          // Initialize the tab switcher
+                          $('a[data-toggle="tab"]').on('click', function (e) {
+                              e.preventDefault();
+                              $(this).tab('show');
+                          });
+                      });
                   }
-
-                  return {
-                      color: color,
-                      weight: 2,
-                      opacity: 1,
-                      dashArray: '5, 5'
-                  };
-              },
-              onEachFeature: function (feature, layer) {
-                // Create a custom HTML content for the popup
-                var popupContent = `
-                    <div class="popup-container">
-                      <ul class="nav nav-tabs" id="myTabs">
-                        <li class="nav-item">
-                          <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Route Details</a>
-                        </li>                      
-                      </ul>
-
-                      <div class="tab-content">
-                        <div class="tab-pane fade show active" id="route-content">
-                         
-                          <p class="popup-content"><strong>Name:</strong> ${feature.properties.main_name}</p>
-                          <p class="popup-content"><strong>Type:</strong> ${feature.properties.types}</p>
-                          <p class="popup-content"><strong>Length:</strong> ${feature.properties.length} meters</p>
-                          <p class="popup-content"><strong>comment:</strong> ${feature.properties.comment}</p>
-                        </div>
-                       
-                      </div>
-                    </div>
-                  `;
-
-                  layer.on('click', function (e) {
-                    // Open the popup
-                    var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
-
-                    // Initialize the tab switcher
-                    $('a[data-toggle="tab"]').on('click', function (e) {
-                      e.preventDefault();
-                      $(this).tab('show');
-                    });
-                  });
-                }
               });
+
 
               var redMarkerIcon = L.divIcon({              
                   html: '<i class="fas fa-box fa-lg" style="color: #d41629;"></i>'
@@ -708,8 +703,7 @@
           }
 
           function our_layer(map, options) {
-              loadBasemap(map, options);
-              var searchLayer = L.layerGroup().addTo(map);
+              loadBasemap(map, options);              
           }
 
           // Call the function to load the basemap
