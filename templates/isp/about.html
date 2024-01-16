@@ -86,7 +86,7 @@
             border: 2px solid #3498db;
             border-radius: 5px;
             padding: 10px;
-            width: 300px;
+            max-width: 400px;
             text-align: left;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
         }
@@ -136,6 +136,36 @@
             color: #555;
         }
         
+            .searched-popup {
+        background-color: #ffffff;
+        border: 2px solid #3498db;
+        border-radius: 5px;
+        padding: 15px;
+        width: 300px;
+        text-align: left;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .popup-content {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .popup-button {
+        display: block;
+        background-color: #3498db;
+        color: #ffffff;
+        text-align: center;
+        padding: 10px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+    }
+
+    .popup-button:hover {
+        background-color: #2980b9;
+    }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.osmbuildings.org/classic/0.2.2b/OSMBuildings-Leaflet.js"></script>
@@ -233,25 +263,30 @@
 
             L.Control.geocoder().addTo(map);
 
-            var searchLayer = L.layerGroup().addTo(map);
-            
+           var searchLayer = L.layerGroup();
+
             function highlightLayer(layer) {
-                layer.setStyle({
-                    fillColor: 'yellow',
-                    fillOpacity: 0.7,
-                    weight: 2,
-                    color: 'yellow',
-                });
+                // Check if the layer is an instance of L.Path and has the setStyle method
+                if (layer instanceof L.Path && typeof layer.setStyle === 'function') {
+                    layer.setStyle({
+                        // fillColor: 'yellow',
+                        fillOpacity: 0.7,
+                        weight: 2,
+                        color: 'green',
+                    });
+                }
             }
 
             function resetLayerHighlight(layer) {
-                // Reset the layer's style to the default
-                layer.setStyle({
-                    fillColor: '',  // Set to the default fill color
-                    fillOpacity: 0.2,  // Set to the default fill opacity
-                    weight: 1,  // Set to the default weight
-                    color: 'black',
-                });
+                // Check if the layer is an instance of L.Path and has the setStyle method
+                if (layer instanceof L.Path && typeof layer.setStyle === 'function') {
+                    layer.setStyle({
+                        fillColor: '', // Set to the default fill color
+                        fillOpacity: 0.2, // Set to the default fill opacity
+                        weight: 1, // Set to the default weight
+                        color: 'black',
+                    });
+                }
             }
 
             function searchLayerByName(name) {
@@ -272,6 +307,9 @@
 
                             // Create a dynamic popup content based on the feature properties
                             const popupContent = createDynamicPopupContent(layer.feature.properties);
+
+                            // Add a custom class to the popup container
+                            popupContent.classList.add('searched-popup');
 
                             layer.bindPopup(popupContent).openPopup();
                         }
@@ -316,9 +354,10 @@
 
             // Add an event listener to reset layer styles when the map is clicked
             map.on('click', function (event) {
-                searchLayer.clearLayers();
+                searchLayer.eachLayer(function (layer) {
+                    resetLayerHighlight(layer);
+                });
             });
-
 
             var overlays = {};
 
@@ -442,7 +481,7 @@
                       var popupContent = `
                           <div class="popup-container">
                               ${feature.properties.photo_url
-                                  ? `<img src="${feature.properties.photo_url}" alt="Fat Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                  ? `<img src="${feature.properties.photo_url}" alt="Fat Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
                                   : '<p class="popup-content">No photo available</p>'}
 
                               <ul class="nav nav-tabs" id="myTabs">
@@ -490,7 +529,7 @@
                       var popupContent = `
                           <div class="popup-container">
                               ${feature.properties.photo_url
-                                  ? `<img src="${feature.properties.photo_url}" alt="Splitter Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                  ? `<img src="${feature.properties.photo_url}" alt="Splitter Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
                                   : '<p class="popup-content">No photo available</p>'}
 
                               <ul class="nav nav-tabs" id="myTabs">
@@ -540,7 +579,7 @@
                       var popupContent = `
                           <div class="popup-container">
                               ${feature.properties.photo_url
-                                  ? `<img src="${feature.properties.photo_url}" alt="Closure Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                  ? `<img src="${feature.properties.photo_url}" alt="Closure Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
                                   : '<p class="popup-content">No photo available</p>'}
 
                               <ul class="nav nav-tabs" id="myTabs">
@@ -551,8 +590,7 @@
 
                               <div class="tab-content">
                                   <div class="tab-pane fade show active" id="route-content">
-                                      <p class="popup-content"><strong>Splitter Name:</strong> ${feature.properties.closore_na}</p>
-                                      <p class="popup-content"><strong>Splitter Type:</strong> ${feature.properties.spliter_ty}</p>
+                                      <p class="popup-content"><strong>Closure Name:</strong> ${feature.properties.closore_na}</p>                                      
                                       <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                          
                                       <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
                                       <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
@@ -623,7 +661,7 @@
                         <div class="popup-container">
                           <ul class="nav nav-tabs" id="myTabs">
                           <li class="nav-item">
-                              <p class="popup-content">${feature.properties.spliter_na.toUpperCase()} Zone</p>
+                              <p class="popup-content">${feature.properties.splite_na.toUpperCase()} Zone</p>
                           </li>
                           </ul>
                           <div class="tab-content">
@@ -652,7 +690,7 @@
                           var popupContent = `
                               <div class="popup-container">
                                   ${feature.properties.photo_url
-                                      ? `<img src="${feature.properties.photo_url}" alt="Center Photo" style="width: 100%; height: auto; margin-bottom: 5px;">`
+                                      ? `<img src="${feature.properties.photo_url}" alt="Center Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
                                       : '<p class="popup-content">No photo available</p>'}
 
                                   <ul class="nav nav-tabs" id="myTabs">
@@ -696,7 +734,7 @@
               overlays['Closure Kits'] = closure;
               overlays['FATs'] = points;
               overlays['Buildings'] = buildings;
-              overlays['Zones'] = zones;
+              overlays['Planning'] = zones;
 
               // Add layer control with baseMaps and overlays
               L.control.layers(baseMaps, overlays).addTo(map);
@@ -706,10 +744,11 @@
               loadBasemap(map, options);              
           }
 
+          
           // Call the function to load the basemap
           window.loadBasemap = loadBasemap;
           window.our_layer = our_layer;
-          window.searchLayer = searchLayer;
+          //window.searchLayer = searchLayer;
 
     </script>
 
