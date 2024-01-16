@@ -164,10 +164,10 @@ class Mains(models.Model):
         verbose_name_plural = "Mains"
 
 class Zone(models.Model):
-    input_fid = models.IntegerField()
+    input_fid = models.IntegerField(null=True)
     id_1 = models.BigIntegerField()
     spliter_id = models.BigIntegerField()
-    spliter_na = models.CharField(max_length=254)
+    splite_na = models.CharField(max_length=254)
     spliter_ty = models.CharField(max_length=254)
     no_of_port = models.CharField(max_length=254)
     installati = models.CharField(max_length=254)
