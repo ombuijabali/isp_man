@@ -2,7 +2,7 @@ from django.urls import path, include
 from . import views 
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required
-from .views import home, about, faqs, signup, settings, notifications, route_datasets, fats_dataset, buildings_dataset, mains_dataset, centers_dataset, update_profile, spliters_dataset, closures_dataset, zones_dataset
+from .views import home, about, faqs, signup, settings, notifications, route_datasets, fats_dataset, buildings_dataset, mains_dataset, centers_dataset, update_profile, spliters_dataset, closures_dataset
 
 urlpatterns = [
     path('', auth_views.LoginView.as_view(), name='login'),  # Landing page is the login view
@@ -14,7 +14,6 @@ urlpatterns = [
     path('centers_data/', centers_dataset, name='centers'),
     path('spliters_data/', spliters_dataset, name='spliters'),
     path('closures_data/', closures_dataset, name='closure'),
-    path('zones_data/', zones_dataset, name='zones'),
     path('faqs/', login_required(faqs), name='faqs'),
     path('home/', login_required(home), name='home'),
     path('notifications/', login_required(notifications), name='notifications'),
