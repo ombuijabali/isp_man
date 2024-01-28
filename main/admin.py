@@ -1,6 +1,6 @@
 from django.contrib import admin
 from leaflet.admin import LeafletGeoAdmin
-from .models import Routes, Fats, UserProfile, Clients, Mains, Center, Closures, Notification, Splitters, Photo, Zone
+from .models import Routes, Fats, UserProfile, Clients, Mains, Center, Closures, Notification, Splitters, Photo
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
@@ -65,14 +65,6 @@ class ClientsAdmin(LeafletGeoAdmin):
         super().save_model(request, obj, form, change)
 
 admin.site.register(Photo)
-
-@admin.register(Zone)
-class ZonesAdmin(LeafletGeoAdmin):
-    list_display = ('spliter_ty',)
-    search_fields = ('spliter_ty',)
-
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
         
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
