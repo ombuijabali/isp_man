@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.contrib.auth.forms import UserCreationForm
 from .forms import CustomUserCreationForm, UserProfileForm
-from .models import Routes, Fats, UserProfile, Clients, Mains, Center, Closures, Notification, Splitters, Photo, Zone
+from .models import Routes, Fats, UserProfile, Clients, Mains, Center, Closures, Notification, Splitters, Photo
 from django.db import models 
 import json
 from django.db.models import Count, Q
@@ -21,7 +21,8 @@ def home(request):
     total_mapped_mains = Mains.objects.exclude(geom__isnull=True).count()
     total_mapped_centers = Center.objects.exclude(geom__isnull=True).count()
     total_mapped_closures = Closures.objects.exclude(geom__isnull=True).count()
-    total_mapped_splitters = Splitters.objects.exclude(geom__isnull=True).count()
+    total_mapped_splitters = Splitters.objects.exclude(geom__isnull=True).filter(spliter_ty='zone').count()
+    total_odb_splitters = Splitters.objects.exclude(geom__isnull=True).filter(spliter_ty='odb').count()
 
     #Charts
     mains_data = Mains.objects.exclude(geom__isnull=True).values('main_name', 'length')
@@ -51,6 +52,7 @@ def home(request):
         'total_mapped_centers': total_mapped_centers,
         'total_mapped_closures': total_mapped_closures,
         'total_mapped_splitters': total_mapped_splitters,
+        'total_odb_splitters': total_odb_splitters,
         'splitter_types': splitter_types_json,  
         'splitter_ports': splitter_ports_json, 
         'building_types': building_types_json,
@@ -108,9 +110,6 @@ def centers_dataset(request):
     centers = serialize('geojson', Center.objects.all())
     return HttpResponse(centers, content_type='application/json')
 
-def zones_dataset(request):
-    zones = serialize('geojson', Zone.objects.all())
-    return HttpResponse(zones, content_type='application/json')
 
 @login_required
 def notifications(request, notification_id=None):
