@@ -112,6 +112,25 @@ class Splitters(models.Model):
     class Meta:
         verbose_name_plural = "Splitters"
 
+class Odb(models.Model):
+    spliter_na = models.CharField(max_length=254, default='', blank=True)
+    spliter_ty = models.CharField(max_length=254, default='', blank=True)
+    no_of_port = models.CharField(max_length=254, default='', blank=True)
+    used_ports = models.IntegerField(default=0, blank=True)
+    unused_por = models.IntegerField(default=0, blank=True)
+    installati = models.CharField(max_length=254, default='', blank=True)
+    condition = models.CharField(max_length=254, default='', blank=True)
+    latitude = models.FloatField(default='', blank=True)
+    longitude = models.FloatField(default='', blank=True)
+    photo_name = models.CharField(max_length=255, default='')
+    photo_url = models.CharField(max_length=200, blank=True, null=True)
+    geom = models.MultiPointField(srid=4326)
+
+    def __str__(self):
+        return self.spliter_na
+
+    class Meta:
+        verbose_name_plural = "Odbs"
 
 class Center(models.Model):
     main_route = models.CharField(max_length=100, null=True, default='', blank=True)
@@ -163,23 +182,6 @@ class Mains(models.Model):
     class Meta:
         verbose_name_plural = "Mains"
 
-class Zone(models.Model):
-    input_fid = models.IntegerField(null=True)
-    id_1 = models.BigIntegerField()
-    spliter_id = models.BigIntegerField()
-    spliter_na = models.CharField(max_length=254)
-    spliter_ty = models.CharField(max_length=254)
-    no_of_port = models.CharField(max_length=254)
-    installati = models.CharField(max_length=254)
-    condition = models.CharField(max_length=254)
-    geom = models.MultiPolygonField(srid=4326)  
-   
-    
-    def __str__(self):
-        return self.spliter_ty
-
-    class Meta:
-        verbose_name_plural = "Zones"
 
 class Clients(models.Model):
     pon_type = models.CharField(max_length=254, default='', blank=True, null=True)
@@ -205,7 +207,6 @@ class Clients(models.Model):
 @receiver(post_save, sender=Closures)
 @receiver(post_save, sender=Mains)
 @receiver(post_save, sender=Center)
-@receiver(post_save, sender=Zone)
 @receiver(post_save, sender=Splitters)
 @receiver(post_save, sender=Clients)
 @receiver(post_save, sender=Notification)
