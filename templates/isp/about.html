@@ -46,8 +46,7 @@
         }
 
         .nav-tabs {
-          border-bottom: none;
-          margin-bottom: 10px;
+          border-bottom: none;          
         }
 
         .nav-tabs .nav-link {
@@ -57,28 +56,18 @@
           border: 1px solid #ddd;
           text-decoration: none;
           color: #333;
-          font-size: 14px;
+          font-size: 10px;
           margin-left: 5px;
         }
 
         .nav-tabs .nav-link.active {
-          background-color: #fff;
-          border-color: #007bff;
+          background-color: #fff;          
           color: #007bff;
         }
 
         .tab-content {
           background-color: #f5f5f5;
-          padding: 10px;
-        }
-
-        .tab-pane .popup-title {
-          font-weight: bold;
-          margin-bottom: 10px;
-        }
-
-        .tab-pane .popup-content {
-          margin-bottom: 5px;
+          padding: 5px;
         }
 
        .popup-container {
@@ -92,8 +81,7 @@
         }
 
         .popup-content {
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 8px;                     
         }
 
         .popup-button {
@@ -104,7 +92,7 @@
             padding: 5px 10px;
             border-radius: 5px;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: lighter;
             cursor: pointer;
         }
 
@@ -123,7 +111,7 @@
 
         .building-popup h3 {
             color: #3498db;
-            font-size: 1.5em;
+            font-size: 10px;
             margin-bottom: 10px;
         }
 
@@ -136,36 +124,18 @@
             color: #555;
         }
         
-            .searched-popup {
-        background-color: #ffffff;
-        border: 2px solid #3498db;
-        border-radius: 5px;
-        padding: 15px;
-        width: 300px;
-        text-align: left;
-        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-    }
+        .searched-popup {
+            background-color: #ffffff;
+            border: 2px solid #3498db;
+            border-radius: 5px;
+            padding: 15px;
+            width: 300px;
+            font-size: 8px;
+            text-align: left;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+        }
 
-    .popup-content {
-        font-size: 16px;
-        margin-bottom: 10px;
-    }
-
-    .popup-button {
-        display: block;
-        background-color: #3498db;
-        color: #ffffff;
-        text-align: center;
-        padding: 10px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .popup-button:hover {
-        background-color: #2980b9;
-    }
+       
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
     <script src="https://cdn.osmbuildings.org/classic/0.2.2b/OSMBuildings-Leaflet.js"></script>
@@ -263,7 +233,7 @@
 
             L.Control.geocoder().addTo(map);
 
-           var searchLayer = L.layerGroup();
+            var searchLayer = L.layerGroup();
 
             function highlightLayer(layer) {
                 // Check if the layer is an instance of L.Path and has the setStyle method
@@ -424,203 +394,222 @@
 
 
             var mains = new L.GeoJSON.AJAX("{% url 'mains' %}", {
-                  style: function (feature) {
-                      return {
-                          color: 'red',
-                          weight: 3,
-                          opacity: 1,
-                          dashArray: '5, 5'
-                      };
-                  },
-                  onEachFeature: function (feature, layer) {
-                      // Create a custom HTML content for the popup
-                      var popupContent = `
-                          <div class="popup-container">
-                              <ul class="nav nav-tabs" id="myTabs">
-                                  <li class="nav-item">
-                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Route Details</a>
-                                  </li>                      
-                              </ul>
+              style: function (feature) {
+                  return {
+                      color: 'red',
+                      weight: 3,
+                      opacity: 1,
+                      dashArray: '5, 5'
+                  };
+              },
+              onEachFeature: function (feature, layer) {
+                  // Create a custom HTML content for the popup
+                  var popupContent = `
+                      <div class="popup-container">
+                          <ul class="nav nav-tabs" id="myTabs">
+                              <li class="nav-item">
+                                  <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Route Details</a>
+                              </li>                      
+                          </ul>
 
-                              <div class="tab-content">
-                                  <div class="tab-pane fade show active" id="route-content">                         
-                                      <p class="popup-content"><strong>Name:</strong> ${feature.properties.main_name}</p>
-                                      <p class="popup-content"><strong>Type:</strong> ${feature.properties.types}</p>
-                                      <p class="popup-content"><strong>Length:</strong> ${feature.properties.length} meters</p>
-                                      <p class="popup-content"><strong>comment:</strong> ${feature.properties.comment}</p>
-                                  </div>                       
-                              </div>
+                          <div class="tab-content">
+                              <div class="tab-pane fade show active" id="route-content">                         
+                                  <p class="popup-content"><strong>Name:</strong> ${feature.properties.main_name}</p>
+                                  <p class="popup-content"><strong>Type:</strong> ${feature.properties.types}</p>
+                                  <p class="popup-content"><strong>Length:</strong> ${feature.properties.length} meters</p>
+                                  <p class="popup-content"><strong>comment:</strong> ${feature.properties.comment}</p>
+                              </div>                       
                           </div>
-                      `;
+                      </div>
+                  `;
 
-                      layer.on('click', function (e) {
-                          // Open the popup
-                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+                  layer.on('click', function (e) {
+                      // Open the popup
+                      var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
 
-                          // Initialize the tab switcher
-                          $('a[data-toggle="tab"]').on('click', function (e) {
-                              e.preventDefault();
-                              $(this).tab('show');
-                          });
+                      // Initialize the tab switcher
+                      $('a[data-toggle="tab"]').on('click', function (e) {
+                          e.preventDefault();
+                          $(this).tab('show');
                       });
-                  }
-              });
+                  });
+              }
+            });
 
 
-              var redMarkerIcon = L.divIcon({              
-                  html: '<i class="fas fa-box fa-lg" style="color: #d41629;"></i>'
-              });
+            // Define an orange marker icon with reduced size
+            var orangeMarkerIcon = L.divIcon({
+                html: '<i class="fas fa-box" style="color: orange; font-size: 12px;"></i>'
+            });
 
-              var points = new L.GeoJSON.AJAX("{% url 'fats' %}", {
-                  pointToLayer: function (feature, latlng) {
-                      // Use the custom red marker icon for points
-                      return L.marker(latlng, { icon: redMarkerIcon });
-                  },
-                  onEachFeature: function (feature, layer) {
-                      // Create a custom HTML content for the popup
-                      var popupContent = `
-                          <div class="popup-container">
-                              ${feature.properties.photo_url
-                                  ? `<img src="${feature.properties.photo_url}" alt="Fat Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
-                                  : '<p class="popup-content">No photo available</p>'}
+           var spliter = new L.GeoJSON.AJAX("{% url 'spliters' %}", {
+                pointToLayer: function (feature, latlng) {
+                    // Use a red circle for 'zone' and the orange marker for others
+                    var markerOptions;
 
-                              <ul class="nav nav-tabs" id="myTabs">
-                                  <li class="nav-item">
-                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Fat Information</a>
-                                  </li>
-                              </ul>
+                    if (feature.properties.spliter_ty === 'zone') {
+                        // Use a red circle marker for zone
+                        markerOptions = {
+                            radius: 8,
+                            color: 'red',
+                            fillOpacity: 1,
+                        };
+                        return L.circleMarker(latlng, markerOptions);
+                    } else {
+                        // Use the custom orange marker icon for others
+                        return L.marker(latlng, { icon: orangeMarkerIcon });
+                    }
+                },
+                onEachFeature: function (feature, layer) {
+                    // Create a custom HTML content for the popup
+                    var popupContent = `
+                        <div class="popup-container">
+                            ${feature.properties.photo_url
+                                ? `<img src="${feature.properties.photo_url}" alt="Splitter Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
+                                : '<p class="popup-content">No photo available</p>'}
 
-                              <div class="tab-content">
-                                  <div class="tab-pane fade show active" id="route-content">
-                                      <p class="popup-content"><strong>Fat Name:</strong> ${feature.properties.fat_name}</p>
-                                      <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
-                                      <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
-                                      <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
-                                      <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
-                                  </div>
-                              </div>
-                          </div>
-                      `;
+                            <ul class="nav nav-tabs" id="myTabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Splitter Information</a>
+                                </li>
+                            </ul>
 
-                      layer.on('click', function (e) {
-                          // Open the popup
-                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="route-content">
+                                    <p class="popup-content"><strong>Splitter Name:</strong> ${feature.properties.spliter_na}</p>
+                                    <p class="popup-content"><strong>Splitter Type:</strong> ${feature.properties.spliter_ty}</p>
+                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
+                                    <p class="popup-content"><strong>No of Ports:</strong> ${feature.properties.no_of_port}</p>
+                                    <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
+                                    <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
+                                    <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
-                          // Initialize the tab switcher (if you decide to keep it)
-                          $('a[data-toggle="tab"]').on('click', function (e) {
-                              e.preventDefault();
-                              $(this).tab('show');
-                          });
-                      });
-                  }
-              });
+                    layer.on('click', function (e) {
+                        // Open the popup
+                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
 
-              var orangeMarkerIcon = L.divIcon({              
-                  html: '<i class="fas fa-box fa-lg" style="color: orange;"></i>'
-              });
+                        // Initialize the tab switcher (if you decide to keep it)
+                        $('a[data-toggle="tab"]').on('click', function (e) {
+                            e.preventDefault();
+                            $(this).tab('show');
+                        });
+                    });
+                }
+            });
 
-              var spliter = new L.GeoJSON.AJAX("{% url 'spliters' %}", {
-                  pointToLayer: function (feature, latlng) {
-                      // Use the custom orange marker icon for points
-                      return L.marker(latlng, { icon: orangeMarkerIcon });
-                  },
-                  onEachFeature: function (feature, layer) {
-                      // Create a custom HTML content for the popup
-                      var popupContent = `
-                          <div class="popup-container">
-                              ${feature.properties.photo_url
-                                  ? `<img src="${feature.properties.photo_url}" alt="Splitter Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
-                                  : '<p class="popup-content">No photo available</p>'}
 
-                              <ul class="nav nav-tabs" id="myTabs">
-                                  <li class="nav-item">
-                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Splitter Information</a>
-                                  </li>
-                              </ul>
+            // Define a square-shaped icon
+            var redSquareIcon = L.divIcon({
+                html: '<div style="width: 15px; height: 15px; background-color: green;"></div>',
+            });
 
-                              <div class="tab-content">
-                                  <div class="tab-pane fade show active" id="route-content">
-                                      <p class="popup-content"><strong>Splitter Name:</strong> ${feature.properties.spliter_na}</p>
-                                      <p class="popup-content"><strong>Splitter Type:</strong> ${feature.properties.spliter_ty}</p>
-                                      <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
-                                      <p class="popup-content"><strong>No of Ports:</strong> ${feature.properties.no_of_port}</p>
-                                      <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
-                                      <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
-                                      <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
-                                  </div>
-                              </div>
-                          </div>
-                      `;
+            var points = new L.GeoJSON.AJAX("{% url 'fats' %}", {
+                pointToLayer: function (feature, latlng) {
+                    // Use the custom red square icon for points
+                    return L.marker(latlng, { icon: redSquareIcon });
+                },
+                onEachFeature: function (feature, layer) {
+                    // Create a custom HTML content for the popup
+                    var popupContent = `
+                        <div class="popup-container">
+                            ${feature.properties.photo_url
+                                ? `<img src="${feature.properties.photo_url}" alt="Fat Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
+                                : '<p class="popup-content">No photo available</p>'}
 
-                      layer.on('click', function (e) {
-                          // Open the popup
-                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+                            <ul class="nav nav-tabs" id="myTabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Fat Information</a>
+                                </li>
+                            </ul>
 
-                          // Initialize the tab switcher (if you decide to keep it)
-                          $('a[data-toggle="tab"]').on('click', function (e) {
-                              e.preventDefault();
-                              $(this).tab('show');
-                          });
-                      });
-                  }
-              });              
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="route-content">
+                                    <p class="popup-content"><strong>Fat Name:</strong> ${feature.properties.fat_name}</p>
+                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
+                                    <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
+                                    <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
+                                    <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
-              var purpleMarkerIcon = L.divIcon({              
-                  html: '<i class="fas fa-box fa-lg" style="color: purple;"></i>'
-              });
+                    layer.on('click', function (e) {
+                        // Open the popup
+                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
 
-              var closure = new L.GeoJSON.AJAX("{% url 'closure' %}", {
-                  pointToLayer: function (feature, latlng) {
-                      // Use the custom purple marker icon for points
-                      return L.marker(latlng, { icon: purpleMarkerIcon });
-                  },
-                  onEachFeature: function (feature, layer) {
-                      // Create a custom HTML content for the popup
-                      var popupContent = `
-                          <div class="popup-container">
-                              ${feature.properties.photo_url
-                                  ? `<img src="${feature.properties.photo_url}" alt="Closure Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
-                                  : '<p class="popup-content">No photo available</p>'}
+                        // Initialize the tab switcher (if you decide to keep it)
+                        $('a[data-toggle="tab"]').on('click', function (e) {
+                            e.preventDefault();
+                            $(this).tab('show');
+                        });
+                    });
+                }
+            });
+                       
 
-                              <ul class="nav nav-tabs" id="myTabs">
-                                  <li class="nav-item">
-                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Closure Information</a>
-                                  </li>
-                              </ul>
+            // Define a circle-shaped icon with purple color
+            var purpleCircleIcon = L.divIcon({
+                html: '<div style="width: 15px; height: 15px; background-color: purple; border-radius: 50%;"></div>',
+            });
 
-                              <div class="tab-content">
-                                  <div class="tab-pane fade show active" id="route-content">
-                                      <p class="popup-content"><strong>Closure Name:</strong> ${feature.properties.closore_na}</p>                                      
-                                      <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                          
-                                      <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
-                                      <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
-                                      <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
-                                  </div>
-                              </div>
-                          </div>
-                      `;
+            var closure = new L.GeoJSON.AJAX("{% url 'closure' %}", {
+                pointToLayer: function (feature, latlng) {
+                    // Use the custom purple circle icon for points
+                    return L.marker(latlng, { icon: purpleCircleIcon });
+                },
+                onEachFeature: function (feature, layer) {
+                    // Create a custom HTML content for the popup
+                    var popupContent = `
+                        <div class="popup-container">
+                            ${feature.properties.photo_url
+                                ? `<img src="${feature.properties.photo_url}" alt="Closure Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
+                                : '<p class="popup-content">No photo available</p>'}
 
-                      layer.on('click', function (e) {
-                          // Open the popup
-                          var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+                            <ul class="nav nav-tabs" id="myTabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Closure Information</a>
+                                </li>
+                            </ul>
 
-                          // Initialize the tab switcher (if you decide to keep it)
-                          $('a[data-toggle="tab"]').on('click', function (e) {
-                              e.preventDefault();
-                              $(this).tab('show');
-                          });
-                      });
-                  }
-              });
+                            <div class="tab-content">
+                                <div class="tab-pane fade show active" id="route-content">
+                                    <p class="popup-content"><strong>Closure Name:</strong> ${feature.properties.closore_na}</p>                                      
+                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                          
+                                    <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
+                                    <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
+                                    <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
 
-              var buildingIcon = L.icon({
+                    layer.on('click', function (e) {
+                        // Open the popup
+                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
+
+                        // Initialize the tab switcher (if you decide to keep it)
+                        $('a[data-toggle="tab"]').on('click', function (e) {
+                            e.preventDefault();
+                            $(this).tab('show');
+                        });
+                    });
+                }
+            });
+
+
+            var buildingIcon = L.icon({
                   iconUrl: '{% static "img/buildings.png" %}',  // Provide the path to your custom icon
                   iconSize: [32, 32],  // Set the size of the icon
                   iconAnchor: [16, 16],  // Set the anchor point of the icon
                   popupAnchor: [0, -16]  // Set the popup anchor relative to the icon
-              });
+            });
 
-             var buildings = L.geoJSON.ajax("{% url 'buildings' %}", {
+            var buildings = L.geoJSON.ajax("{% url 'buildings' %}", {
                   pointToLayer: function (feature, latlng) {
                       return L.marker(latlng, { icon: buildingIcon });
                   },
@@ -636,7 +625,8 @@
                                   <div class="tab-pane fade show active" id="route-content">
                                       <p class="popup-content"><strong>Client(s):</strong> ${feature.properties.client_nam}</p>
                                       <p class="popup-content"><strong>Type:</strong> ${feature.properties.building_t}</p>
-                                      <p class="popup-content"><strong>Service Splitter:</strong> ${feature.properties.odb_split}</p>
+                                      <p class="popup-content"><strong>Zone:</strong> ${feature.properties.zone}</p>
+                                      <p class="popup-content"><strong>ODB Splitter:</strong> ${feature.properties.odb_split}</p>
                                   </div>
                               </div>
                           </div>
@@ -644,111 +634,76 @@
 
                       layer.bindPopup(popupContent);
                   }
-              });
+            });
+           
 
-
-              var zones = new L.GeoJSON.AJAX("{% url 'zones' %}", {
-                  style: function (feature) {
-                      return {
-                          fillColor: 'transparent', // Brown color
-                          fillOpacity: 0.9, // Adjust opacity if needed
-                          weight: 1.5, // Border weight
-                          color: 'black' // Border color
-                      };
-                  },
-                  onEachFeature: function (feature, layer) {            
+            var centers = new L.GeoJSON.AJAX("{% url 'centers' %}", {
+              style: function (feature) {
+                  // Style for polygons, e.g., blue fill color
+                  return { fillColor: 'blue', color: 'oceanblue', fillOpacity: 0.7 };
+              },
+              onEachFeature: function (feature, layer) {
+                  // Bind a popup to each feature
+                  if (feature.properties) {
                       var popupContent = `
-                        <div class="popup-container">
-                          <ul class="nav nav-tabs" id="myTabs">
-                          <li class="nav-item">
-                              <p class="popup-content">${feature.properties.spliter_na.toUpperCase()} Zone</p>
-                          </li>
-                          </ul>
-                          <div class="tab-content">
-                            <div class="tab-pane fade show active" id="route-content">                        
-                              <p class="popup-content"><strong>Type:</strong> ${feature.properties.spliter_ty}</p>
-                              <p class="popup-content"><strong>Number of Ports:</strong> ${feature.properties.no_of_port}</p>
-                              <p class="popup-content"><strong>Status:</strong> ${feature.properties.condition}</p>
-                            </div>                                                                    
-                          </div>
-                        </div>
-                      `;
+                          <div class="popup-container">
+                              ${feature.properties.photo_url
+                                  ? `<img src="${feature.properties.photo_url}" alt="Center Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
+                                  : '<p class="popup-content">No photo available</p>'}
 
-                      layer.bindPopup(popupContent);
-                  }
-              });
-              
+                              <ul class="nav nav-tabs" id="myTabs">
+                                  <li class="nav-item">
+                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Centers Details</a>
+                                  </li>                      
+                              </ul>
 
-              var centers = new L.GeoJSON.AJAX("{% url 'centers' %}", {
-                  style: function (feature) {
-                      // Style for polygons, e.g., blue fill color
-                      return { fillColor: 'blue', color: 'oceanblue', fillOpacity: 0.7 };
-                  },
-                  onEachFeature: function (feature, layer) {
-                      // Bind a popup to each feature
-                      if (feature.properties) {
-                          var popupContent = `
-                              <div class="popup-container">
-                                  ${feature.properties.photo_url
-                                      ? `<img src="${feature.properties.photo_url}" alt="Center Photo" style="width: 100%; height: 40%; margin-bottom: 5px;">`
-                                      : '<p class="popup-content">No photo available</p>'}
-
-                                  <ul class="nav nav-tabs" id="myTabs">
-                                      <li class="nav-item">
-                                          <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Centers Details</a>
-                                      </li>                      
-                                  </ul>
-
-                                  <div class="tab-content">
-                                      <div class="tab-pane fade show active" id="route-content">
-                                          <p class="popup-content"><strong> Center Name:</strong> ${feature.properties.main_route}</p>
-                                          <p class="popup-content"><strong>Center Code:</strong> ${feature.properties.code}</p>
-                                          <p class="popup-content"><strong>Description:</strong> ${feature.properties.descriptio} meters</p>
-                                          <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
-                                      </div>
+                              <div class="tab-content">
+                                  <div class="tab-pane fade show active" id="route-content">
+                                      <p class="popup-content"><strong> Center Name:</strong> ${feature.properties.main_route}</p>
+                                      <p class="popup-content"><strong>Center Code:</strong> ${feature.properties.code}</p>
+                                      <p class="popup-content"><strong>Description:</strong> ${feature.properties.descriptio} meters</p>
+                                      <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
                                   </div>
                               </div>
-                          `;
-                          layer.bindPopup(popupContent);
-                      }
+                          </div>
+                      `;
+                      layer.bindPopup(popupContent);
                   }
-              });
-
+              }
+            });
               
 
-              // Add GeoJSON layers to the map
-              datasets.addTo(map);
-              points.addTo(map);
-              buildings.addTo(map);
-              mains.addTo(map);
-              centers.addTo(map);
-              spliter.addTo(map);
-              closure.addTo(map);
-              zones.addTo(map);
+            // Add GeoJSON layers to the map
+            datasets.addTo(map);
+            mains.addTo(map);
+            spliter.addTo(map);
+            points.addTo(map);            
+            closure.addTo(map);
+            buildings.addTo(map);            
+            centers.addTo(map);          
 
-              // Add GeoJSON layers to the overlays object
-              overlays['Routes'] = datasets;                    
-              overlays['Main Routes'] = mains;
-              overlays['Data Centers'] = centers;
-              overlays['Splitters'] = spliter;
-              overlays['Closure Kits'] = closure;
-              overlays['FATs'] = points;
-              overlays['Buildings'] = buildings;
-              overlays['Planning'] = zones;
+            // Add GeoJSON layers to the overlays object
+            overlays['Routes'] = datasets;                    
+            overlays['Main Routes'] = mains;
+            overlays['Data Centers'] = centers;
+            overlays['Splitters'] = spliter;
+            overlays['Closure Kits'] = closure;
+            overlays['FATs'] = points;
+            overlays['Buildings'] = buildings;            
 
-              // Add layer control with baseMaps and overlays
-              L.control.layers(baseMaps, overlays).addTo(map);
-          }
+            // Add layer control with baseMaps and overlays
+            L.control.layers(baseMaps, overlays).addTo(map);
 
-          function our_layer(map, options) {
-              loadBasemap(map, options);              
-          }
+        }
 
+        function our_layer(map, options) {
+          loadBasemap(map, options);              
+        }
           
-          // Call the function to load the basemap
-          window.loadBasemap = loadBasemap;
-          window.our_layer = our_layer;
-          //window.searchLayer = searchLayer;
+        // Call the function to load the basemap
+        window.loadBasemap = loadBasemap;
+        window.our_layer = our_layer;
+        //window.searchLayer = searchLayer;
 
     </script>
 
