@@ -109,7 +109,7 @@
   </div>
   <div class="footer">
     <hr style="width: 100%">
-    <p>&copy; 2023 GwijiNet Solutions. All rights reserved.</p>
+     <p id="copyright">&copy; <span id="year">2024</span> GwijiNet Solutions. All rights reserved.</p>
     <br>
     <p>Email: <a href="mailto:gwijinet@gmail.com">gwijinet@gmail.com</a></p>
     <br>
@@ -121,4 +121,9 @@
       <a href="#" target="https://www.gwijinet.com/"><i class="fab fa-youtube" style="color: red;"></i></a>
     </div>
   </div>
+
+  <script>
+    // Update the copyright year dynamically
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
 {% endblock %}
