@@ -12,7 +12,7 @@
     <link rel="shortcut icon" type="image/x-icon" href="{% static 'img/gwijinet.png' %}">
 
   
-    <style>
+    <style>       
         body {
             display: flex;
             font-family: 'Open Sans', sans-serif;
@@ -140,6 +140,8 @@
                             {% endif %}
                         </a>
                     </li>
+
+
                     <li class="nav-item">
                         <a class="nav-link btn btn-teal" href="{% url 'settings' %}">
                             <i class="fas fa-cog" style="margin-right: 5px; color: orange;"></i> Settings
@@ -153,11 +155,14 @@
                             </button>
                         </form>
                     </li>
+
+
+
                 </ul>
             </div><br><br><br><br><br>
               <footer class="footer mt-auto" style="margin-top: 40px;">
                 <div class="container text-center">
-                    <p>&copy; 2023 GwijiNet Solutions. All rights reserved.</p>
+                    <p id="copyright">&copy; <span id="year">2024</span> GwijiNet Solutions. All rights reserved.</p>
                 </div>
             </footer>
         </div>
@@ -208,6 +213,9 @@
                 $('#main').toggleClass('collapsed');
             });
         });
+
+        // Update the copyright year dynamically
+        document.getElementById('year').textContent = new Date().getFullYear();
     </script>
 </body>
 </html>
