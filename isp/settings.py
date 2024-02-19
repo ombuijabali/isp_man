@@ -76,6 +76,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    "main.middleware.coop_middleware.CrossOriginOpenerPolicyMiddleware",
 ]
 
 ROOT_URLCONF = "isp.urls"
