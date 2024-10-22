@@ -154,9 +154,146 @@
         .copy-button:hover {
           background-color: #0056b3;
         }
+        .leaflet-popup-content {
+            margin: 0 !important;
+            padding: 0 !important;
+            min-width: 300px !important;
+        }
+    
+        .popup-container {
+            padding: 0;
+        }
+    
+        .popup-content {
+            padding: 15px;
+        }
+    
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eef2f7;
+        }
+    
+        .popup-title {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 00;
+            color: #2c3e50;
+        }
+    
+        .popup-controls {
+            display: flex;
+            gap: 12px;
+        }
+    
+        .popup-controls i {
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+    
+        .edit-btn {
+            color: #3498db;
+        }
+    
+        .edit-btn:hover {
+            color: #2980b9;
+        }
+    
+        .save-btn {
+            color: #2ecc71;
+        }
+    
+        .save-btn:hover {
+            color: #27ae60;
+        }
+    
+        .cancel-btn {
+            color: #e74c3c;
+        }
+    
+        .cancel-btn:hover {
+            color: #c0392b;
+        }
+    
+        .property-group {
+            margin-bottom: 15px;
+            padding: 8px;
+            border-radius: 6px;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+        }
+    
+        .property-group:hover {
+            background: #eef2f7;
+        }
+    
+        .property-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+    
+        .property-content {
+            position: relative;
+        }
+    
+        .property-value {
+            font-size: 14px;
+            color: #2c3e50;
+            display: block;
+            padding: 4px 0;
+        }
+    
+        .edit-field {
+            width: 100%;
+            padding: 8px 12px;
+            border: 2px solid #3498db;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #2c3e50;
+            background: #fff;
+            transition: all 0.3s ease;
+        }
+    
+        .edit-field:focus {
+            outline: none;
+            border-color: #2980b9;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+    
+        .properties-container {
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+    
+        .properties-container::-webkit-scrollbar {
+            width: 6px;
+        }
+    
+        .properties-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+    
+        .properties-container::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+    
+        .properties-container::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-    <script src="https://cdn.osmbuildings.org/classic/0.2.2b/OSMBuildings-Leaflet.js"></script>
+    
 <body> 
     <div id="gis-container">
         <div id="gis"></div>
@@ -373,375 +510,348 @@
                 });
             });
 
-            var overlays = {};
+            const overlays = {};
 
-            // Add GeoJSON datasets to the overlays
-            var datasets = new L.GeoJSON.AJAX("{% url 'routes' %}", {
-                style: function (feature) {
-                    var color;
-                    switch (feature.properties.types) {
-                        case 'zone':
-                            color = 'blue';
-                            break;
-                        case 'odb':
-                            color = 'yellow';
-                            break;
-                        default:
-                            color = 'blue'; // Default to blue if the type is not 'zone' or 'odb'
-                    }
+            const layerUrls = {
+                'routes': '/route_data/',
+                'fats': '/fats_data/',
+                'buildings': '/buildings_data/',
+                'mains': '/mains_data/',
+                'centers': '/centers_data/',
+                'spliters': '/spliters_data/',
+                'closures': '/closures_data/'
+            };
 
-                    return {
-                        color: color,
+            // Function to create popup content
+            function createPopupContent(feature, title, properties) {
+                const photoHtml = feature.properties.photo_url 
+                    ? `<img src="${feature.properties.photo_url}" alt="${title} Photo" style="width: 100%; max-height: 150px; object-fit: cover; margin-bottom: 10px;">`
+                    : '<p class="text-muted">No photo available</p>';
+
+                const propertyHtml = properties.map(prop => 
+                    `<div class="property-group">
+                        <div class="property-label">${prop.label}</div>
+                        <div class="property-content">
+                            <span class="property-value">${feature.properties[prop.key] || 'N/A'}${prop.unit || ''}</span>
+                            <input type="text" class="edit-field" 
+                                name="${prop.key}" 
+                                value="${feature.properties[prop.key] || ''}"
+                                style="display: none;">
+                        </div>
+                    </div>`
+                ).join('');
+
+                return `
+                    <div class="popup-container">
+                        ${photoHtml}
+                        <div class="popup-content">
+                            <div class="popup-header">
+                                <h5 class="popup-title">${title}</h5>
+                                <div class="popup-controls">
+                                    <i class="fas fa-edit edit-btn" title="Edit"></i>
+                                    <i class="fas fa-check save-btn" title="Save" style="display: none;"></i>
+                                    <i class="fas fa-times cancel-btn" title="Cancel" style="display: none;"></i>
+                                </div>
+                            </div>
+                            <div class="properties-container">
+                                ${propertyHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+
+            // Function to handle edit mode
+            function toggleEditMode(popupElement, isEdit) {
+                const propertyValues = popupElement.querySelectorAll('.property-value');
+                const editFields = popupElement.querySelectorAll('.edit-field');
+                const editBtn = popupElement.querySelector('.edit-btn');
+                const saveBtn = popupElement.querySelector('.save-btn');
+                const cancelBtn = popupElement.querySelector('.cancel-btn');
+
+                propertyValues.forEach(el => el.style.display = isEdit ? 'none' : 'block');
+                editFields.forEach(el => el.style.display = isEdit ? 'block' : 'none');
+                editBtn.style.display = isEdit ? 'none' : 'block';
+                saveBtn.style.display = isEdit ? 'block' : 'none';
+                cancelBtn.style.display = isEdit ? 'block' : 'none';
+            }
+
+            // Function to handle button clicks
+            function handleButtonClick(action, layer, popup) {
+                const popupElement = popup.getElement().querySelector('.popup-container');
+                
+                // Log the featureType to see if it's being set correctly
+                console.log('Feature Type:', layer.feature.properties.featureType);
+            
+                switch(action) {
+                    case 'edit':
+                        toggleEditMode(popupElement, true);
+                        break;
+            
+                    case 'save':
+                        const formData = new FormData();
+                        popupElement.querySelectorAll('.edit-field').forEach(input => {
+                            formData.append(input.name, input.value);
+                        });
+            
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        formData.append('csrfmiddlewaretoken', csrfToken);
+            
+                        const featureId = layer.feature.id || layer.feature.properties.id;
+                        
+                        let updateUrl = '';
+                        const featureType = layer.feature.properties.featureType;  // Check featureType
+            
+                        // Debugging log
+                        if (!featureType) {
+                            console.log("Feature type is missing for feature ID:", featureId);
+                        }
+            
+                        switch (featureType) {
+                            case 'route':
+                                updateUrl = `/route_data/${featureId}/update/`;
+                                break;
+                            case 'fat':
+                                updateUrl = `/fats_data/${featureId}/update/`;
+                                break;
+                            case 'building':
+                                updateUrl = `/buildings_data/${featureId}/update/`;
+                                break;
+                            case 'main':
+                                updateUrl = `/mains_data/${featureId}/update/`;
+                                break;
+                            case 'center':
+                                updateUrl = `/centers_data/${featureId}/update/`;
+                                break;
+                            case 'spliter':
+                                updateUrl = `/spliters_data/${featureId}/update/`;
+                                break;
+                            case 'closure':
+                                updateUrl = `/closures_data/${featureId}/update/`;
+                                break;
+                            default:
+                                alert('Unknown feature type');
+                                return;
+                        }
+            
+                        fetch(updateUrl, {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRFToken': csrfToken
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Object.assign(layer.feature.properties, data.properties);
+                                toggleEditMode(popupElement, false);
+                            } else {
+                                alert('Error saving changes');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error saving changes');
+                        });
+                        break;
+            
+                    case 'cancel':
+                        toggleEditMode(popupElement, false);
+                        break;
+                }
+            }
+            
+
+
+            // Function to attach popup event handlers
+            function attachPopupHandlers(layer, popupContent) {
+                layer.bindPopup(popupContent);
+
+                layer.on('popupopen', function(e) {
+                    const popup = e.popup;
+                    const popupElement = popup.getElement();
+                    
+                    if (!popupElement) return;
+
+                    const container = popupElement.querySelector('.popup-container');
+                    
+                    // Remove existing listeners to prevent duplicates
+                    const editBtn = container.querySelector('.edit-btn');
+                    const saveBtn = container.querySelector('.save-btn');
+                    const cancelBtn = container.querySelector('.cancel-btn');
+                    
+                    const newEditBtn = editBtn.cloneNode(true);
+                    const newSaveBtn = saveBtn.cloneNode(true);
+                    const newCancelBtn = cancelBtn.cloneNode(true);
+                    
+                    editBtn.parentNode.replaceChild(newEditBtn, editBtn);
+                    saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+                    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+                    // Add new listeners
+                    newEditBtn.addEventListener('click', () => handleButtonClick('edit', layer, popup));
+                    newSaveBtn.addEventListener('click', () => handleButtonClick('save', layer, popup));
+                    newCancelBtn.addEventListener('click', () => handleButtonClick('cancel', layer, popup));
+                });
+            }
+            // Layer Configurations
+            const layerConfigs = {
+                routes: {
+                    url: "{% url 'routes' %}",
+                    style: feature => ({
+                        color: feature.properties.types === 'zone' ? 'blue' : 
+                               feature.properties.types === 'odb' ? 'yellow' : 'blue',
                         fillOpacity: 0.7,
+                        weight: 3
+                    }),
+                    properties: [
+                        { key: 'route_name', label: 'Name' },
+                        { key: 'service_av', label: 'Service Available' },
+                        { key: 'olt', label: 'Operator' },
+                        { key: 'status', label: 'Status' },
+                        { key: 'installati', label: 'Installation Date' },
+                        { key: 'infrasturc', label: 'Infrastructure' },
+                        { key: 'bandwidth', label: 'Capacity' },
+                        { key: 'length', label: 'Fibre Length', unit: ' meters' },
+                        { key: 'types', label: 'Route Type' },
+                        { key: 'comment', label: 'Comment' }
+                    ]
+                },
+                mains: {
+                    url: "{% url 'mains' %}",
+                    style: {
+                        color: 'red',
                         weight: 3,
-                    };
+                        opacity: 1,
+                        dashArray: '5, 5'
+                    },
+                    properties: [
+                        { key: 'main_name', label: 'Name' },
+                        { key: 'types', label: 'Type' },
+                        { key: 'length', label: 'Length', unit: ' meters' },
+                        { key: 'comment', label: 'Comment' }
+                    ]
                 },
-                onEachFeature: function (feature, layer) {
-                    // Create a custom HTML content for the popup
-                    var popupContent = `
-                        <div class="popup-container">
-                            <ul class="nav nav-tabs" id="myTabs">
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Route Information</a>
-                                </li>                    
-                            </ul>
-
-                            <div class="tab-content">
-                                <div class="tab-pane fade show active" id="route-content">
-                                    <p class="popup-content"><strong>Name:</strong> ${feature.properties.route_name}</p>
-                                    <p class="popup-content"><strong>Service Available:</strong> ${feature.properties.service_av}</p>
-                                    <p class="popup-content"><strong>Operator:</strong> ${feature.properties.olt}</p>
-                                    <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
-                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                      
-                                    <p class="popup-content"><strong>Infrastacture:</strong> ${feature.properties.infrasturc}</p>
-                                    <p class="popup-content"><strong>Capacity:</strong> ${feature.properties.bandwidth}</p>
-                                    <p class="popup-content"><strong>Fibre Length:</strong> ${feature.properties.length} meters</p>
-                                    <p class="popup-content"><strong>Route Type:</strong> ${feature.properties.types}</p>
-                                    <p class="popup-content"><strong>Comment:</strong> ${feature.properties.comment}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    layer.on('click', function (e) {
-                        // Open the popup
-                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
-
-                        // Initialize the tab switcher
-                        $('a[data-toggle="tab"]').on('click', function (e) {
-                            e.preventDefault();
-                            $(this).tab('show');
-                        });
-                    });
+                splitters: {
+                    url: "{% url 'spliters' %}",
+                    icon: L.divIcon({
+                        html: '<i class="fas fa-box" style="color: orange; font-size: 12px;"></i>'
+                    }),
+                    properties: [
+                        { key: 'spliter_na', label: 'Splitter Name' },
+                        { key: 'spliter_ty', label: 'Splitter Type' },
+                        { key: 'installati', label: 'Installation Date' },
+                        { key: 'no_of_port', label: 'No of Ports' },
+                        { key: 'condition', label: 'Condition' },
+                        { key: 'latitude', label: 'Latitude' },
+                        { key: 'longitude', label: 'Longitude' }
+                    ]
+                },
+                fats: {
+                    url: "{% url 'fats' %}",
+                    icon: L.divIcon({
+                        html: '<div style="width: 15px; height: 15px; background-color: green;"></div>'
+                    }),
+                    properties: [
+                        { key: 'fat_name', label: 'Fat Name' },
+                        { key: 'installati', label: 'Installation Date' },
+                        { key: 'condition', label: 'Condition' },
+                        { key: 'latitude', label: 'Latitude' },
+                        { key: 'longitude', label: 'Longitude' }
+                    ]
+                },
+                closure: {
+                    url: "{% url 'closure' %}",
+                    icon: L.divIcon({
+                        html: '<div style="width: 15px; height: 15px; background-color: purple; border-radius: 50%;"></div>'
+                    }),
+                    properties: [
+                        { key: 'closore_na', label: 'Closure Name' },
+                        { key: 'installati', label: 'Installation Date' },
+                        { key: 'condition', label: 'Condition' },
+                        { key: 'latitude', label: 'Latitude' },
+                        { key: 'longitude', label: 'Longitude' }
+                    ]
+                },
+                buildings: {
+                    url: "{% url 'buildings' %}",
+                    icon: L.icon({
+                        iconUrl: "{% static 'img/buildings.png' %}",
+                        iconSize: [32, 32],
+                        iconAnchor: [16, 16],
+                        popupAnchor: [0, -16]
+                    }),
+                    properties: [
+                        { key: 'address', label: 'Address' },
+                        { key: 'client_nam', label: 'Client(s)' },
+                        { key: 'building_t', label: 'Type' },
+                        { key: 'zone', label: 'Zone' },
+                        { key: 'odb_split', label: 'ODB Splitter' }
+                    ]
+                },
+                centers: {
+                    url: "{% url 'centers' %}",
+                    style: {
+                        fillColor: 'blue',
+                        color: 'oceanblue',
+                        fillOpacity: 0.7
+                    },
+                    properties: [
+                        { key: 'main_route', label: 'Center Name' },
+                        { key: 'code', label: 'Center Code' },
+                        { key: 'descriptio', label: 'Description' },
+                        { key: 'status', label: 'Status' }
+                    ]
                 }
-            });
+            };
+            
+            // Initialize and add layers to map
+            const layers = {};
 
-
-            var mains = new L.GeoJSON.AJAX("{% url 'mains' %}", {
-              style: function (feature) {
-                  return {
-                      color: 'red',
-                      weight: 3,
-                      opacity: 1,
-                      dashArray: '5, 5'
-                  };
-              },
-              onEachFeature: function (feature, layer) {
-                  // Create a custom HTML content for the popup
-                  var popupContent = `
-                      <div class="popup-container">
-                          <ul class="nav nav-tabs" id="myTabs">
-                              <li class="nav-item">
-                                  <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Route Details</a>
-                              </li>                      
-                          </ul>
-
-                          <div class="tab-content">
-                              <div class="tab-pane fade show active" id="route-content">                         
-                                  <p class="popup-content"><strong>Name:</strong> ${feature.properties.main_name}</p>
-                                  <p class="popup-content"><strong>Type:</strong> ${feature.properties.types}</p>
-                                  <p class="popup-content"><strong>Length:</strong> ${feature.properties.length} meters</p>
-                                  <p class="popup-content"><strong>comment:</strong> ${feature.properties.comment}</p>
-                              </div>                       
-                          </div>
-                      </div>
-                  `;
-
-                  layer.on('click', function (e) {
-                      // Open the popup
-                      var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
-
-                      // Initialize the tab switcher
-                      $('a[data-toggle="tab"]').on('click', function (e) {
-                          e.preventDefault();
-                          $(this).tab('show');
-                      });
-                  });
-              }
-            });
-
-
-            // Define an orange marker icon with reduced size
-            var orangeMarkerIcon = L.divIcon({
-                html: '<i class="fas fa-box" style="color: orange; font-size: 12px;"></i>'
-            });
-
-           var spliter = new L.GeoJSON.AJAX("{% url 'spliters' %}", {
-                pointToLayer: function (feature, latlng) {
-                    // Use a red circle for 'zone' and the orange marker for others
-                    var markerOptions;
-
-                    if (feature.properties.spliter_ty === 'zone') {
-                        // Use a red circle marker for zone
-                        markerOptions = {
-                            radius: 8,
-                            color: 'red',
-                            fillOpacity: 1,
-                        };
-                        return L.circleMarker(latlng, markerOptions);
-                    } else {
-                        // Use the custom orange marker icon for others
-                        return L.marker(latlng, { icon: orangeMarkerIcon });
+            Object.entries(layerConfigs).forEach(([key, config]) => {
+                layers[key] = new L.GeoJSON.AJAX(config.url, {
+                    style: config.style,
+                    pointToLayer: (feature, latlng) => {
+                        if (config.icon) {
+                            return L.marker(latlng, { icon: config.icon });
+                        }
+                        if (key === 'splitters' && feature.properties.spliter_ty === 'zone') {
+                            return L.circleMarker(latlng, {
+                                radius: 8,
+                                color: 'red',
+                                fillOpacity: 1
+                            });
+                        }
+                        return L.marker(latlng);
+                    },
+                    onEachFeature: (feature, layer) => {
+                        const popupContent = createPopupContent(
+                            feature,
+                            `${key.charAt(0).toUpperCase() + key.slice(1)} Information`,
+                            config.properties
+                        );
+                        attachPopupHandlers(layer, popupContent);
                     }
-                },
-                onEachFeature: function (feature, layer) {
-                    // Create a custom HTML content for the popup
-                    var popupContent = `
-                        <div class="popup-container">
-                            ${feature.properties.photo_url
-                                ? `<img src="${feature.properties.photo_url}" alt="Splitter Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
-                                : '<p class="popup-content">No photo available</p>'}
-
-                            <ul class="nav nav-tabs" id="myTabs">
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Splitter Information</a>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content">
-                                <div class="tab-pane fade show active" id="route-content">
-                                    <p class="popup-content"><strong>Splitter Name:</strong> ${feature.properties.spliter_na}</p>
-                                    <p class="popup-content"><strong>Splitter Type:</strong> ${feature.properties.spliter_ty}</p>
-                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
-                                    <p class="popup-content"><strong>No of Ports:</strong> ${feature.properties.no_of_port}</p>
-                                    <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
-                                    <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
-                                    <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    layer.on('click', function (e) {
-                        // Open the popup
-                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
-
-                        // Initialize the tab switcher (if you decide to keep it)
-                        $('a[data-toggle="tab"]').on('click', function (e) {
-                            e.preventDefault();
-                            $(this).tab('show');
-                        });
-                    });
-                }
+                });
             });
-
-
-            // Define a square-shaped icon
-            var redSquareIcon = L.divIcon({
-                html: '<div style="width: 15px; height: 15px; background-color: green;"></div>',
+            
+            // Add layers to map
+            Object.entries(layers).forEach(([key, layer]) => {
+                layer.addTo(map);
+                overlays[key.charAt(0).toUpperCase() + key.slice(1)] = layer;
             });
-
-            var points = new L.GeoJSON.AJAX("{% url 'fats' %}", {
-                pointToLayer: function (feature, latlng) {
-                    // Use the custom red square icon for points
-                    return L.marker(latlng, { icon: redSquareIcon });
-                },
-                onEachFeature: function (feature, layer) {
-                    // Create a custom HTML content for the popup
-                    var popupContent = `
-                        <div class="popup-container">
-                            ${feature.properties.photo_url
-                                ? `<img src="${feature.properties.photo_url}" alt="Fat Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
-                                : '<p class="popup-content">No photo available</p>'}
-
-                            <ul class="nav nav-tabs" id="myTabs">
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Fat Information</a>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content">
-                                <div class="tab-pane fade show active" id="route-content">
-                                    <p class="popup-content"><strong>Fat Name:</strong> ${feature.properties.fat_name}</p>
-                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>
-                                    <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
-                                    <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
-                                    <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    layer.on('click', function (e) {
-                        // Open the popup
-                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
-
-                        // Initialize the tab switcher (if you decide to keep it)
-                        $('a[data-toggle="tab"]').on('click', function (e) {
-                            e.preventDefault();
-                            $(this).tab('show');
-                        });
-                    });
-                }
-            });
-                       
-
-            // Define a circle-shaped icon with purple color
-            var purpleCircleIcon = L.divIcon({
-                html: '<div style="width: 15px; height: 15px; background-color: purple; border-radius: 50%;"></div>',
-            });
-
-            var closure = new L.GeoJSON.AJAX("{% url 'closure' %}", {
-                pointToLayer: function (feature, latlng) {
-                    // Use the custom purple circle icon for points
-                    return L.marker(latlng, { icon: purpleCircleIcon });
-                },
-                onEachFeature: function (feature, layer) {
-                    // Create a custom HTML content for the popup
-                    var popupContent = `
-                        <div class="popup-container">
-                            ${feature.properties.photo_url
-                                ? `<img src="${feature.properties.photo_url}" alt="Closure Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
-                                : '<p class="popup-content">No photo available</p>'}
-
-                            <ul class="nav nav-tabs" id="myTabs">
-                                <li class="nav-item">
-                                    <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Closure Information</a>
-                                </li>
-                            </ul>
-
-                            <div class="tab-content">
-                                <div class="tab-pane fade show active" id="route-content">
-                                    <p class="popup-content"><strong>Closure Name:</strong> ${feature.properties.closore_na}</p>                                      
-                                    <p class="popup-content"><strong>Installation Date:</strong> ${feature.properties.installati}</p>                          
-                                    <p class="popup-content"><strong>Condition:</strong> ${feature.properties.condition}</p>
-                                    <p class="popup-content"><strong>Latitude:</strong> ${feature.properties.latitude}</p>
-                                    <p class="popup-content"><strong>Longitude:</strong> ${feature.properties.longitude}</p>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-
-                    layer.on('click', function (e) {
-                        // Open the popup
-                        var popup = layer.bindPopup(popupContent).openPopup(e.latlng);
-
-                        // Initialize the tab switcher (if you decide to keep it)
-                        $('a[data-toggle="tab"]').on('click', function (e) {
-                            e.preventDefault();
-                            $(this).tab('show');
-                        });
-                    });
-                }
-            });
-
-
-            var buildingIcon = L.icon({
-                  iconUrl: '{% static "img/buildings.png" %}',  // Provide the path to your custom icon
-                  iconSize: [32, 32],  // Set the size of the icon
-                  iconAnchor: [16, 16],  // Set the anchor point of the icon
-                  popupAnchor: [0, -16]  // Set the popup anchor relative to the icon
-            });
-
-            var buildings = L.geoJSON.ajax("{% url 'buildings' %}", {
-                  pointToLayer: function (feature, latlng) {
-                      return L.marker(latlng, { icon: buildingIcon });
-                  },
-                  onEachFeature: function (feature, layer) {
-                      var popupContent = `
-                          <div class="popup-container">
-                              <ul class="nav nav-tabs" id="myTabs">
-                                  <li class="nav-item">
-                                      <p class="popup-content">${feature.properties.address}</p>
-                                  </li>
-                              </ul>
-                              <div class="tab-content">
-                                  <div class="tab-pane fade show active" id="route-content">
-                                      <p class="popup-content"><strong>Client(s):</strong> ${feature.properties.client_nam}</p>
-                                      <p class="popup-content"><strong>Type:</strong> ${feature.properties.building_t}</p>
-                                      <p class="popup-content"><strong>Zone:</strong> ${feature.properties.zone}</p>
-                                      <p class="popup-content"><strong>ODB Splitter:</strong> ${feature.properties.odb_split}</p>
-                                  </div>
-                              </div>
-                          </div>
-                      `;
-
-                      layer.bindPopup(popupContent);
-                  }
-            });
-           
-
-            var centers = new L.GeoJSON.AJAX("{% url 'centers' %}", {
-              style: function (feature) {
-                  // Style for polygons, e.g., blue fill color
-                  return { fillColor: 'blue', color: 'oceanblue', fillOpacity: 0.7 };
-              },
-              onEachFeature: function (feature, layer) {
-                  // Bind a popup to each feature
-                  if (feature.properties) {
-                      var popupContent = `
-                          <div class="popup-container">
-                              ${feature.properties.photo_url
-                                  ? `<img src="${feature.properties.photo_url}" alt="Center Photo" style="width: 100%; height: 30%; margin-bottom: 2px;">`
-                                  : '<p class="popup-content">No photo available</p>'}
-
-                              <ul class="nav nav-tabs" id="myTabs">
-                                  <li class="nav-item">
-                                      <a class="nav-link active" id="route-tab" data-toggle="tab" href="#route-content">Main Centers Details</a>
-                                  </li>                      
-                              </ul>
-
-                              <div class="tab-content">
-                                  <div class="tab-pane fade show active" id="route-content">
-                                      <p class="popup-content"><strong> Center Name:</strong> ${feature.properties.main_route}</p>
-                                      <p class="popup-content"><strong>Center Code:</strong> ${feature.properties.code}</p>
-                                      <p class="popup-content"><strong>Description:</strong> ${feature.properties.descriptio} meters</p>
-                                      <p class="popup-content"><strong>Status:</strong> ${feature.properties.status}</p>
-                                  </div>
-                              </div>
-                          </div>
-                      `;
-                      layer.bindPopup(popupContent);
-                  }
-              }
-            });
-              
-
-            // Add GeoJSON layers to the map
-            datasets.addTo(map);
-            mains.addTo(map);
-            spliter.addTo(map);
-            points.addTo(map);            
-            closure.addTo(map);
-            buildings.addTo(map);            
-            centers.addTo(map);          
-
-            // Add GeoJSON layers to the overlays object
-            overlays['Routes'] = datasets;                    
-            overlays['Main Routes'] = mains;
-            overlays['Data Centers'] = centers;
-            overlays['Splitters'] = spliter;
-            overlays['Closure Kits'] = closure;
-            overlays['FATs'] = points;
-            overlays['Buildings'] = buildings;            
-
-            // Add layer control with baseMaps and overlays
+            
+            // Add layer control
             L.control.layers(baseMaps, overlays).addTo(map);
-
         }
 
         function our_layer(map, options) {
-          loadBasemap(map, options);              
+            loadBasemap(map, options);
+
+            // Lazy load the GeoJSON data
+            loadGeoJSONData(map);
         }
           
         // Call the function to load the basemap
