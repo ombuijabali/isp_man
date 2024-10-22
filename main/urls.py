@@ -14,6 +14,16 @@ urlpatterns = [
     path('centers_data/', centers_dataset, name='centers'),
     path('spliters_data/', spliters_dataset, name='spliters'),
     path('closures_data/', closures_dataset, name='closure'),
+     # Update endpoints
+    path('route_data/<int:feature_id>/update/', route_datasets, name='update_route'),
+    path('fats_data/<int:feature_id>/update/', fats_dataset, name='update_fat'),
+    path('buildings_data/<int:feature_id>/update/', buildings_dataset, name='update_building'),
+    path('mains_data/<int:feature_id>/update/', mains_dataset, name='update_main'),
+    path('centers_data/<int:feature_id>/update/', centers_dataset, name='update_center'),
+    path('spliters_data/<int:feature_id>/update/', spliters_dataset, name='update_spliter'),
+    path('closures_data/<int:feature_id>/update/', closures_dataset, name='update_closure'),
+    
+    #USER URLS
     path('faqs/', login_required(faqs), name='faqs'),
     path('home/', login_required(home), name='home'),
     path('notifications/', login_required(notifications), name='notifications'),
