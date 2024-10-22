@@ -12,6 +12,11 @@ from django.db import models
 import json
 from django.db.models import Count, Q
 from django.contrib.auth.decorators import login_required
+from django.core.serializers import serialize
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+import json
+
 
 def home(request):
     # Get the total number of mapped routes and fats.
@@ -82,31 +87,101 @@ def home(request):
 def about(request):
     return render(request, 'isp/about.html')
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def route_datasets(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            route = Routes.objects.create(**data)
+            return JsonResponse({'status': 'success', 'id': route.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
     routes = serialize('geojson', Routes.objects.all())
     return HttpResponse(routes, content_type='application/json')
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def fats_dataset(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            fat = Fats.objects.create(**data)
+            return JsonResponse({'status': 'success', 'id': fat.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
     fats = serialize('geojson', Fats.objects.all())
     return HttpResponse(fats, content_type='application/json')
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def spliters_dataset(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            splitter = Splitters.objects.create(**data)
+            return JsonResponse({'status': 'success', 'id': splitter.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
     spliters = serialize('geojson', Splitters.objects.all())
     return HttpResponse(spliters, content_type='application/json')
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def closures_dataset(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            closure = Closures.objects.create(**data)
+            return JsonResponse({'status': 'success', 'id': closure.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
     closures = serialize('geojson', Closures.objects.all())
     return HttpResponse(closures, content_type='application/json')
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def buildings_dataset(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            building = Clients.objects.create(**data)
+            return JsonResponse({'status': 'success', 'id': building.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
     buildings = serialize('geojson', Clients.objects.all())
     return HttpResponse(buildings, content_type='application/json')
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def mains_dataset(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            main = Mains.objects.create(**data)
+            return JsonResponse({'status': 'success', 'id': main.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
     mains = serialize('geojson', Mains.objects.all())
     return HttpResponse(mains, content_type='application/json')
 
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
 def centers_dataset(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            center = Center.objects.create(**data)
+            return JsonResponse({'status': 'success', 'id': center.id})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+    
     centers = serialize('geojson', Center.objects.all())
     return HttpResponse(centers, content_type='application/json')
 
