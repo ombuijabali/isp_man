@@ -3,8 +3,6 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login
 from django.views.generic import TemplateView
 from django.core.serializers import serialize
-from django.http import HttpResponse
-from django.http import JsonResponse
 from django.contrib.auth.forms import UserCreationForm
 from .forms import CustomUserCreationForm, UserProfileForm
 from .models import Routes, Fats, UserProfile, Clients, Mains, Center, Closures, Notification, Splitters, Photo
@@ -16,6 +14,8 @@ from django.core.serializers import serialize
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import get_object_or_404
 
 
 def home(request):
@@ -86,104 +86,94 @@ def home(request):
 
 def about(request):
     return render(request, 'isp/about.html')
+class FeatureViewMixin:
+    @staticmethod
+    def handle_feature_request(request, model_class, feature_id=None):
+        if request.method == "GET":
+            # Fetch a single feature if ID is provided, otherwise fetch all
+            if feature_id:
+                feature = get_object_or_404(model_class, id=feature_id)
+                feature_data = serialize('geojson', [feature])
+                return HttpResponse(feature_data, content_type='application/json')
+            else:
+                features = serialize('geojson', model_class.objects.all())
+                return HttpResponse(features, content_type='application/json')
+
+        elif request.method == "POST":
+            try:
+                # Parse JSON data from request body
+                data = json.loads(request.body)
+                feature = model_class.objects.create(**data)
+                return JsonResponse({'success': True, 'id': feature.id, 'properties': data})
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+        elif request.method in ["PUT", "PATCH"] and feature_id:
+            try:
+                feature = get_object_or_404(model_class, id=feature_id)
+                data = json.loads(request.body)
+
+                # Update each attribute if it exists on the model instance
+                for key, value in data.items():
+                    if hasattr(feature, key):
+                        setattr(feature, key, value)
+                feature.save()
+
+                return JsonResponse({'success': True, 'properties': data})
+            except json.JSONDecodeError:
+                return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+        elif request.method == "DELETE" and feature_id:
+            try:
+                feature = get_object_or_404(model_class, id=feature_id)
+                feature.delete()
+                return JsonResponse({'success': True, 'message': 'Feature deleted successfully'})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)}, status=400)
+
+        # Invalid request method
+        return JsonResponse({'success': False, 'error': 'Invalid request method'}, status=405)
+
+# Example view function that uses the mixin
+@csrf_exempt
+@require_http_methods(["GET", "POST", "PUT", "PATCH", "DELETE"])
+def route_datasets(request, feature_id=None):
+    return FeatureViewMixin.handle_feature_request(request, Routes, feature_id)
+
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def route_datasets(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            route = Routes.objects.create(**data)
-            return JsonResponse({'status': 'success', 'id': route.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    routes = serialize('geojson', Routes.objects.all())
-    return HttpResponse(routes, content_type='application/json')
+@require_http_methods(["GET", "POST", "PUT", "PATCH", "DELETE"])
+def fats_dataset(request, feature_id=None):
+    return FeatureViewMixin.handle_feature_request(request, Fats, feature_id)
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def fats_dataset(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            fat = Fats.objects.create(**data)
-            return JsonResponse({'status': 'success', 'id': fat.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    fats = serialize('geojson', Fats.objects.all())
-    return HttpResponse(fats, content_type='application/json')
+@require_http_methods(["GET", "POST", "PUT", "PATCH", "DELETE"])
+def spliters_dataset(request, feature_id=None):
+    return FeatureViewMixin.handle_feature_request(request, Splitters, feature_id)
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def spliters_dataset(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            splitter = Splitters.objects.create(**data)
-            return JsonResponse({'status': 'success', 'id': splitter.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    spliters = serialize('geojson', Splitters.objects.all())
-    return HttpResponse(spliters, content_type='application/json')
+@require_http_methods(["GET", "POST", "PUT", "PATCH", "DELETE"])
+def closures_dataset(request, feature_id=None):
+    return FeatureViewMixin.handle_feature_request(request, Closures, feature_id)
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def closures_dataset(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            closure = Closures.objects.create(**data)
-            return JsonResponse({'status': 'success', 'id': closure.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    closures = serialize('geojson', Closures.objects.all())
-    return HttpResponse(closures, content_type='application/json')
+@require_http_methods(["GET", "POST", "PUT", "PATCH", "DELETE"])
+def buildings_dataset(request, feature_id=None):
+    return FeatureViewMixin.handle_feature_request(request, Clients, feature_id)
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def buildings_dataset(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            building = Clients.objects.create(**data)
-            return JsonResponse({'status': 'success', 'id': building.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    buildings = serialize('geojson', Clients.objects.all())
-    return HttpResponse(buildings, content_type='application/json')
+@require_http_methods(["GET", "POST", "PUT", "PATCH", "DELETE"])
+def mains_dataset(request, feature_id=None):
+    return FeatureViewMixin.handle_feature_request(request, Mains, feature_id)
 
 @csrf_exempt
-@require_http_methods(["GET", "POST"])
-def mains_dataset(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            main = Mains.objects.create(**data)
-            return JsonResponse({'status': 'success', 'id': main.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    mains = serialize('geojson', Mains.objects.all())
-    return HttpResponse(mains, content_type='application/json')
-
-@csrf_exempt
-@require_http_methods(["GET", "POST"])
-def centers_dataset(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            center = Center.objects.create(**data)
-            return JsonResponse({'status': 'success', 'id': center.id})
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
-    
-    centers = serialize('geojson', Center.objects.all())
-    return HttpResponse(centers, content_type='application/json')
+@require_http_methods(["GET", "POST", "PUT", "PATCH", "DELETE"])
+def centers_dataset(request, feature_id=None):
+    return FeatureViewMixin.handle_feature_request(request, Center, feature_id)
 
 
 @login_required
