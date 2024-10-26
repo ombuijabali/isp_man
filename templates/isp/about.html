@@ -512,16 +512,6 @@
 
             const overlays = {};
 
-            const layerUrls = {
-                'routes': '/route_data/',
-                'fats': '/fats_data/',
-                'buildings': '/buildings_data/',
-                'mains': '/mains_data/',
-                'centers': '/centers_data/',
-                'spliters': '/spliters_data/',
-                'closures': '/closures_data/'
-            };
-
             // Function to create popup content
             function createPopupContent(feature, title, properties) {
                 const photoHtml = feature.properties.photo_url 
@@ -576,85 +566,128 @@
                 saveBtn.style.display = isEdit ? 'block' : 'none';
                 cancelBtn.style.display = isEdit ? 'block' : 'none';
             }
+            // Function to determine feature type
+            function determineFeatureType(feature) {
+                if (!feature || !feature.properties) {
+                    throw new Error('Invalid feature structure');
+                }
 
-            // Function to handle button clicks
+                // Check for specific properties that uniquely identify each type
+                if (feature.properties.fat_name) return 'fat';
+                if (feature.properties.route_name) return 'route';
+                if (feature.properties.closore_na) return 'closure';
+                if (feature.properties.spliter_na) return 'splitter';
+                if (feature.properties.main_name) return 'main';
+                if (feature.properties.client_nam) return 'buildings';
+                if (feature.properties.code) return 'center';
+                
+                return null;
+            }
+
+            // Process feature to ensure it has the correct structure
+            function processFeature(feature) {
+                if (!feature || !feature.properties) {
+                    throw new Error('Invalid feature structure');
+                }
+
+                const featureType = determineFeatureType(feature);
+                if (!featureType) {
+                    throw new Error('Unable to determine feature type');
+                }
+
+                // Use Django's default ID
+                const featureId = feature.id;
+                if (!featureId) {
+                    throw new Error('Feature is missing ID');
+                }
+
+                return {
+                    ...feature,
+                    properties: {
+                        ...feature.properties,
+                        feature_type: featureType,
+                        feature_id: featureId
+                    }
+                };
+            }
+
+            // Generate URL for feature updates
+            function getUpdateUrl(feature) {
+                const processed = processFeature(feature);
+                const featureId = processed.properties.feature_id;
+                
+                if (!featureId) {
+                    throw new Error('Missing feature ID');
+                }
+            
+                const baseUrl = '';
+                const featureType = processed.properties.feature_type;
+                
+                // Map feature types to their plural form for the API endpoint
+                const typeToEndpoint = {
+                    'fat': 'fats_data',
+                    'route': 'route_data',
+                    'closure': 'closures_data',
+                    'splitter': 'spliters_data',
+                    'main': 'mains_data',
+                    'buildings': 'buildings_data', 
+                    'center': 'centers_data'
+                };
+            
+                const endpoint = typeToEndpoint[featureType];
+                if (!endpoint) {
+                    throw new Error(`Unknown feature type: ${featureType}`);
+                }
+            
+                return `${baseUrl}/${endpoint}/${featureId}/`; 
+            }
+            
             function handleButtonClick(action, layer, popup) {
                 const popupElement = popup.getElement().querySelector('.popup-container');
                 
-                // Log the featureType to see if it's being set correctly
-                console.log('Feature Type:', layer.feature.properties.featureType);
-            
                 switch(action) {
                     case 'edit':
                         toggleEditMode(popupElement, true);
                         break;
             
                     case 'save':
-                        const formData = new FormData();
-                        popupElement.querySelectorAll('.edit-field').forEach(input => {
-                            formData.append(input.name, input.value);
-                        });
-            
-                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                        formData.append('csrfmiddlewaretoken', csrfToken);
-            
-                        const featureId = layer.feature.id || layer.feature.properties.id;
-                        
-                        let updateUrl = '';
-                        const featureType = layer.feature.properties.featureType;  // Check featureType
-            
-                        // Debugging log
-                        if (!featureType) {
-                            console.log("Feature type is missing for feature ID:", featureId);
-                        }
-            
-                        switch (featureType) {
-                            case 'route':
-                                updateUrl = `/route_data/${featureId}/update/`;
-                                break;
-                            case 'fat':
-                                updateUrl = `/fats_data/${featureId}/update/`;
-                                break;
-                            case 'building':
-                                updateUrl = `/buildings_data/${featureId}/update/`;
-                                break;
-                            case 'main':
-                                updateUrl = `/mains_data/${featureId}/update/`;
-                                break;
-                            case 'center':
-                                updateUrl = `/centers_data/${featureId}/update/`;
-                                break;
-                            case 'spliter':
-                                updateUrl = `/spliters_data/${featureId}/update/`;
-                                break;
-                            case 'closure':
-                                updateUrl = `/closures_data/${featureId}/update/`;
-                                break;
-                            default:
-                                alert('Unknown feature type');
-                                return;
-                        }
-            
-                        fetch(updateUrl, {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-CSRFToken': csrfToken
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                Object.assign(layer.feature.properties, data.properties);
+                        try {
+                            const updateUrl = getUpdateUrl(layer.feature);
+                            const data = {};
+                            
+                            // Add only the form field values, excluding any ID fields
+                            popupElement.querySelectorAll('.edit-field').forEach(input => {
+                                if (input.value && !input.name.includes('id')) {
+                                    data[input.name] = input.value;
+                                }
+                            });                            
+                            
+                            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                            
+                            fetch(updateUrl, {
+                                method: 'PUT',
+                                body: JSON.stringify(data),
+                                headers: {
+                                    'X-CSRFToken': csrfToken,
+                                    'Content-Type': 'application/json'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(() => {
                                 toggleEditMode(popupElement, false);
-                            } else {
-                                alert('Error saving changes');
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Error saving changes');
-                        });
+                                popup.remove();
+                            })
+                            .catch(error => {
+                                console.error('Save error:', error);
+                            });
+                        } catch (error) {
+                            console.error('Processing error:', error);
+                        }
                         break;
             
                     case 'cancel':
@@ -663,9 +696,19 @@
                 }
             }
             
+            // Add this function to help with debugging
+            function inspectFeature(layer) {
+                console.log('=== Feature Inspection ===');
+                console.log('Feature:', layer.feature);
+                console.log('Properties:', layer.feature.properties);
+                console.log('Layer options:', layer.options);
+                if (layer.options.icon) {
+                    console.log('Icon options:', layer.options.icon.options);
+                }
+                console.log('=== End Inspection ===');
+            }
 
-
-            // Function to attach popup event handlers
+            // Modify your attachPopupHandlers function to include the debug inspection
             function attachPopupHandlers(layer, popupContent) {
                 layer.bindPopup(popupContent);
 
@@ -674,6 +717,9 @@
                     const popupElement = popup.getElement();
                     
                     if (!popupElement) return;
+
+                    // Add debug inspection when popup opens
+                    inspectFeature(layer);
 
                     const container = popupElement.querySelector('.popup-container');
                     
@@ -696,7 +742,7 @@
                     newCancelBtn.addEventListener('click', () => handleButtonClick('cancel', layer, popup));
                 });
             }
-            // Layer Configurations
+                        // Layer Configurations
             const layerConfigs = {
                 routes: {
                     url: "{% url 'routes' %}",
@@ -745,6 +791,9 @@
                         { key: 'installati', label: 'Installation Date' },
                         { key: 'no_of_port', label: 'No of Ports' },
                         { key: 'condition', label: 'Condition' },
+                        { key: 'slug', label: 'Slugs' },
+                        { key: 'history', label: 'History' },
+                        { key: 'splicing_det', label: 'Spliciing Details' },
                         { key: 'latitude', label: 'Latitude' },
                         { key: 'longitude', label: 'Longitude' }
                     ]
@@ -771,6 +820,9 @@
                         { key: 'closore_na', label: 'Closure Name' },
                         { key: 'installati', label: 'Installation Date' },
                         { key: 'condition', label: 'Condition' },
+                        { key: 'slug', label: 'Slugs' },
+                        { key: 'history', label: 'History' },
+                        { key: 'splicing_det', label: 'Spliciing Details' },
                         { key: 'latitude', label: 'Latitude' },
                         { key: 'longitude', label: 'Longitude' }
                     ]
