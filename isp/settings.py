@@ -105,7 +105,7 @@ DATABASES = {
         "NAME": "ispman_db",
         "USER": "postgres",
         "PASSWORD": "@ISPman2023",
-        "HOST": "128.199.36.210",
+        "HOST": "localhost",
         "PORT": "5432",
     }
 }
