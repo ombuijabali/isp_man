@@ -32,6 +32,7 @@
             overflow-y: auto;
             transition: all 0.5s ease;
             box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+            left: 0;
         }
         
         #sidebar.collapsed {
@@ -120,7 +121,8 @@
             margin-left: 300px;
             padding: 2rem;
             transition: margin-left 0.5s ease;
-            width: calc(100% - 300px);
+            width: auto;
+            flex: 1;
             box-sizing: border-box;
         }
         
