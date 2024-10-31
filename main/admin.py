@@ -42,7 +42,7 @@ class ClosuresAdmin(LeafletGeoAdmin):
 
 @admin.register(Splitters)
 class SplitersAdmin(LeafletGeoAdmin):
-    list_display = ('spliter_na',)
+    list_display = ( list_display = ('spliter_na', 'spliter_ty', 'no_of_port', 'used_ports', 'unused_por', 'installati', 'condition', 'slug', 'history', 'splicing_det', 'latitude', 'longitude', 'photo_name', 'photo_url')
     search_fields = ('spliter_na',)
 
     def save_model(self, request, obj, form, change):
